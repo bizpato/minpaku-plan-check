@@ -517,12 +517,12 @@ const OPTIONS = [
     yes:'自分で設置・手配できる', no:'まるごと準備をお願いしたい' },
 
   { id:'op1', cat:'開業準備', name:'予約サイトへの掲載', includedInSetup:true,
-    desc:'民泊を始めるには、Airbnb や Booking.com に物件ページを作って公開する必要があります。写真の並べ方、説明文、料金やキャンセル規定の設定など、慣れていないと半日〜数日かかる作業です。掲載内容の良し悪しは予約の入りやすさに直結します。',
+    desc:'民泊を始めるには、Airbnb や Booking.com に物件ページを作って公開する必要があります。写真の並べ方、説明文、料金やキャンセル規定の設定など、慣れていないと半日〜数日かかる作業です。掲載内容の良し悪しは予約の入りやすさに直結します。<br>※ この掲載には、<strong>予約システム（Beds24）の連携設定（単体30,000円）も含まれます</strong>。',
     price:150000, type:'initial',
     yes:'もう掲載できている／自分で作れる', no:'プロにきれいに作ってほしい' },
 
   { id:'op2', cat:'開業準備', name:'予約システムの連携設定', includedInSetup:true,
-    desc:'複数の予約サイトに掲載すると、予約状況をまとめて管理する仕組み（Beds24）が必要です。これがないと、同じ日に二重予約が入ってしまうことがあります。各サイトとの接続設定はやや専門的な作業です。<br><strong>※ スタンダードをご契約の場合は、掲載サイトがAirbnbのみ・Bookingのみであっても、Beds24連携が必須となります</strong>（運営代行・チェックインシステムの前提のため）。',
+    desc:'複数の予約サイトに掲載すると、予約状況をまとめて管理する仕組み（Beds24）が必要です。これがないと、同じ日に二重予約が入ってしまうことがあります。各サイトとの接続設定はやや専門的な作業です。<br>※ この連携設定は、<strong>予約サイト掲載OP（150,000円）に含まれます</strong>。掲載をご自身で済ませた方が、連携だけを依頼する場合のオプションです。<br>※ スタンダードをご契約の場合は、掲載サイトがAirbnbのみ・Bookingのみであっても、Beds24連携が必須となります。',
     price:30000, type:'initial',
     yes:'設定できている／自分でやれる', no:'設定をお願いしたい' },
 
@@ -662,6 +662,10 @@ OPTIONS.forEach((op,i)=>{
       if(op.id==='op8'){
         applySetupLinkage(btn.dataset.v);
       }
+      // 予約サイト掲載(op1)を「お願いしたい(no)」にしたら、連携設定(op2)は掲載に含まれるため非表示
+      if(op.id==='op1'){
+        applyListingLinkage(btn.dataset.v);
+      }
       checkOptDone();
     });
   });
@@ -684,6 +688,30 @@ function applySetupLinkage(setupVal){
       card.style.display='';
     }
   });
+  // セットアップ解除で再表示した場合、op1が「お願いしたい」ならop2は非表示を維持
+  if(!willHide){
+    applyListingLinkage(optAnswers['op1']);
+  }
+}
+
+// 予約サイト掲載(op1)を「お願いしたい(no)」にしたら、連携設定(op2)を非表示
+// （掲載OPにBeds24連携が含まれるため）。op8非表示時のみ意味を持つ。
+function applyListingLinkage(listingVal){
+  const op2card = optContainer.querySelector('[data-opt-id="op2"]');
+  if(!op2card) return;
+  // op8が選ばれてop2が既に非表示の場合はそちらの制御を優先（触らない）
+  const op8val = optAnswers['op8'];
+  const op8hiding = (op8val==='no' || op8val==='maybe');
+  if(op8hiding) return;
+  if(listingVal==='no'){
+    // 掲載をお願い → 連携も含まれるのでop2非表示
+    op2card.style.display='none';
+    delete optAnswers['op2'];
+    op2card.querySelectorAll('.opt.sel').forEach(b=>b.classList.remove('sel'));
+  }else{
+    // 自分で作れる/わからない → op2は表示（掲載は自分でやるので連携設定が必要かも）
+    op2card.style.display='';
+  }
 }
 
 // 立地に応じて初期セットアップ(op8)を表示/非表示
