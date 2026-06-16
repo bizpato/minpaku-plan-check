@@ -151,13 +151,20 @@
   }
   .opt:hover{border-color:#c5d2e0;background:#fcfdff;}
   .opt .ic{
-    flex-shrink:0;width:30px;height:30px;border-radius:50%;
+    flex-shrink:0;width:24px;height:24px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    font-size:14px;color:var(--white);
+    font-size:12px;color:var(--white);
+    border:2px solid var(--line);background:var(--white);
+    transition:all .2s ease;
   }
-  .opt .ic.yes{background:var(--green);}
-  .opt .ic.maybe{background:var(--amber);}
-  .opt .ic.no{background:var(--red);}
+  /* 中立アイコン：ラジオボタン風。選択時にネイビーで塗る */
+  .opt .ic .fa-solid{opacity:0;transition:opacity .15s;}
+  .opt.sel .ic{background:var(--navy);border-color:var(--navy);}
+  .opt.sel .ic .fa-solid{opacity:1;}
+  /* 黄色（わからない・不安）は維持：相談推奨の合図。選択前から?を表示 */
+  .opt .ic.maybe{border-color:var(--amber);color:var(--amber);}
+  .opt .ic.maybe .fa-solid{opacity:1;}
+  .opt.sel .ic.maybe{background:var(--amber);border-color:var(--amber);color:var(--white);}
   .opt .txt{flex:1;font-size:16px;font-weight:400;line-height:1.55;color:var(--navy);}
   .opt .txt small{display:block;font-size:13px;color:var(--mid);font-weight:400;margin-top:3px;}
   .opt.sel{border-color:var(--navy);background:var(--sky-light);}
@@ -344,9 +351,9 @@
       <div class="q-title">どの形態で民泊を運営されますか（される予定ですか）？</div>
       <div class="q-desc">運営形態によって、必要となるサポートやご契約の形が変わります。<strong>住宅宿泊事業法（民泊新法）</strong>では、ホスト様が住宅宿泊管理業の登録をお持ちでない場合、弊社との<strong>住宅宿泊管理業者契約</strong>が必要です。</div>
       <div class="opts">
-        <button class="opt" data-v="ryokan"><span class="ic yes"><i class="fa-solid fa-building"></i></span><span class="txt">旅館業（簡易宿所など）<small>→ チェックインの進め方をうかがいます</small></span></button>
-        <button class="opt" data-v="minpaku"><span class="ic yes"><i class="fa-solid fa-house"></i></span><span class="txt">住宅宿泊事業法（民泊新法）<small>→ 管理業者契約が必要です</small></span></button>
-        <button class="opt" data-v="undecided"><span class="ic maybe"><i class="fa-solid fa-question"></i></span><span class="txt">まだ決めていない・わからない<small>→ 無料相談でご一緒に確認します</small></span></button>
+        <button class="opt" data-v="ryokan"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">旅館業（簡易宿所など）<small>→ チェックインの進め方をうかがいます</small></span></button>
+        <button class="opt" data-v="minpaku"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">住宅宿泊事業法（民泊新法）<small>→ 管理業者契約が必要です</small></span></button>
+        <button class="opt" data-v="undecided"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">まだ決めていない・わからない<small>→ 無料相談でご一緒に確認します</small></span></button>
       </div>
     </div>
 
@@ -362,8 +369,8 @@
         <div class="q-desc">無人運営には、ゲストがQRコードでチェックインできる仕組み、スマートロックとの連携、<strong>宿泊者名簿の管理</strong>などが必要です。弊社の<strong>チェックインシステム</strong>を使えば、これらをまとめて自動化できます。</div>
         <div class="q-note">※ すでにご自身でチェックインの仕組みをお持ちの場合は、プラン契約なしで必要なオプションだけをご利用いただくこともできます。</div>
         <div class="opts">
-          <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">お任せしたい<small>→ プラン診断にすすみます</small></span></button>
-          <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">自分で仕組みを用意できる／もうある<small>→ 必要なサポートだけご案内します</small></span></button>
+          <button class="opt" data-v="yes"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">お任せしたい<small>→ プラン診断にすすみます</small></span></button>
+          <button class="opt" data-v="no"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">自分で仕組みを用意できる／もうある<small>→ 必要なサポートだけご案内します</small></span></button>
         </div>
       </div>
     </div>
@@ -382,8 +389,8 @@
         <div class="q-desc">民泊では時間を問わず、「お湯が出ない」「設備の使い方がわからない」「騒音で眠れない」といった連絡がゲストから入ります。弊社では<strong>24時間・日本人バイリンガルスタッフ</strong>が電話・メールで対応し、<strong>60分以内に返信</strong>します（駆けつけ対応や業者手配が必要な場合のみ、ホスト様にエスカレーションします）。</div>
         <div class="q-note">※ 現地への<strong>駆けつけ対応</strong>は、どのプランでもホスト様にて駆けつけ業者の手配が必要です（弊社の対応範囲外です）。</div>
         <div class="opts">
-          <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分や家族・スタッフで対応できる</span></button>
-          <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">自分では難しい・本業に集中したい</span></button>
+          <button class="opt" data-v="yes"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">自分や家族・スタッフで対応できる</span></button>
+          <button class="opt" data-v="no"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">自分では難しい・本業に集中したい</span></button>
         </div>
       </div>
 
@@ -394,8 +401,8 @@
         <div class="q-desc">宿泊が終わるたびに清掃が必要です。清掃会社への連絡、当日の手配、「掃除が終わっていない」というトラブルの確認まで、こまめな管理が発生します。</div>
         <div class="q-note">※ 清掃会社との契約は、<strong>どちらのプランでもホスト様ご自身</strong>で行っていただきます。また、<strong>消耗品・備品の補充</strong>は、ホスト様から清掃会社へ直接ご依頼いただきます（弊社の対応範囲外です）。</div>
         <div class="opts">
-          <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で手配・確認できる</span></button>
-          <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">自動でやってほしい・手間を減らしたい</span></button>
+          <button class="opt" data-v="yes"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">自分で手配・確認できる</span></button>
+          <button class="opt" data-v="no"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">自動でやってほしい・手間を減らしたい</span></button>
         </div>
       </div>
 
@@ -405,8 +412,8 @@
         <div class="q-title">口コミ（特に低評価）への対応は、どうされますか？</div>
         <div class="q-desc">ゲストの口コミは予約数に直結します。特に低評価がついたときは、原因の分析・清掃会社への共有・返信文の作成まで対応が必要です。</div>
         <div class="opts">
-          <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で対応できる</span></button>
-          <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">プロに任せたい</span></button>
+          <button class="opt" data-v="yes"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">自分で対応できる</span></button>
+          <button class="opt" data-v="no"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">プロに任せたい</span></button>
         </div>
       </div>
     </div>
@@ -431,8 +438,8 @@
       <div class="q-title">物件の所在地は東京23区内ですか？</div>
       <div class="q-desc">所在地によって、ご利用いただけるサポートが変わります。鍵・備品の設置をまとめて代行する<strong>初期セットアップ</strong>は、東京23区内の物件が対象です。</div>
       <div class="opts">
-        <button class="opt" data-v="in"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">東京23区内です</span></button>
-        <button class="opt" data-v="out"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">東京23区外です</span></button>
+        <button class="opt" data-v="in"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">東京23区内です</span></button>
+        <button class="opt" data-v="out"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">東京23区外です</span></button>
       </div>
     </div>
 
@@ -637,9 +644,9 @@ OPTIONS.forEach((op,i)=>{
     <div class="q-title">${op.name}</div>
     <div class="q-desc">${op.desc}</div>
     <div class="opts">
-      <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">${op.yes}<small>→ サポートは不要です</small></span></button>
+      <button class="opt" data-v="yes"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">${op.yes}<small>→ サポートは不要です</small></span></button>
       <button class="opt" data-v="maybe"><span class="ic maybe"><i class="fa-solid fa-question"></i></span><span class="txt">やり方がわからない・不安がある<small>→ サポートをおすすめします</small></span></button>
-      <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">${op.no}<small>→ サポートをおすすめします</small></span></button>
+      <button class="opt" data-v="no"><span class="ic"><i class="fa-solid fa-check"></i></span><span class="txt">${op.no}<small>→ サポートをおすすめします</small></span></button>
     </div>
     <div class="opt-price">お任せいただく場合：<strong>${priceLabel}</strong>（税抜）</div>
   `;
