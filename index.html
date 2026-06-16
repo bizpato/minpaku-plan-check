@@ -389,7 +389,7 @@
       <div class="q" data-plan-q="0">
         <div class="q-num">質問 1 / 3<span class="cat-pill">ゲスト対応</span></div>
         <div class="q-title">深夜や早朝のゲスト対応は、どうされますか？</div>
-        <div class="q-desc">民泊では時間を問わず、「お湯が出ない」「設備の使い方がわからない」「騒音で眠れない」といった連絡がゲストから入ります。弊社では<strong>24時間・日本人バイリンガルスタッフ</strong>が電話・メールで対応し、<strong>60分以内に返信</strong>します（駆けつけ対応や業者手配が必要な場合のみ、ホスト様にエスカレーションします）。</div>
+        <div class="q-desc">民泊では時間を問わず、「お湯が出ない」「設備の使い方がわからない」「騒音で眠れない」といった連絡がゲストから入ります。弊社では<strong>24時間・日本人バイリンガルスタッフ</strong>が電話・メールで対応し、<strong>60分以内に返信</strong>します（駆けつけ対応や業者手配が必要な場合のみ、ホスト様にご連絡・対応をお願いします）。</div>
         <div class="q-note">※ 現地への<strong>駆けつけ対応</strong>は、どのプランでもホスト様にて駆けつけ業者の手配が必要です（弊社の対応範囲外です）。</div>
         <div class="opts">
           <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分や家族・スタッフで対応できる</span></button>
@@ -399,10 +399,10 @@
 
       <!-- Q2 -->
       <div class="q" data-plan-q="1">
-        <div class="q-num">質問 2 / 3<span class="cat-pill">清掃の手配</span></div>
-        <div class="q-title">予約ごとの清掃手配と完了確認は、どうされますか？</div>
-        <div class="q-desc">宿泊が終わるたびに清掃が必要です。清掃会社への連絡、当日の手配、「掃除が終わっていない」というトラブルの確認まで、こまめな管理が発生します。</div>
-        <div class="q-note">※ 清掃会社との契約は、<strong>どちらのプランでもホスト様ご自身</strong>で行っていただきます。また、<strong>消耗品・備品の補充</strong>は、ホスト様から清掃会社へ直接ご依頼いただきます（弊社の対応範囲外です）。</div>
+        <div class="q-num">質問 2 / 3<span class="cat-pill">清掃のやりとり</span></div>
+        <div class="q-title">運営開始後、予約ごとの清掃のやりとりは、どうされますか？</div>
+        <div class="q-desc">運営が始まると、宿泊が終わるたびに清掃が必要です。予約ごとの清掃会社への連絡・日程調整、「掃除が終わっていない」というトラブルの確認まで、こまめなやりとりが発生します。この質問は<strong>運営開始後の清掃会社とのやりとり</strong>についてうかがうものです。</div>
+        <div class="q-note">※ 清掃会社との契約は、どちらのプランでも<strong>ホスト様ご自身</strong>で行っていただきます。また、消耗品・備品の補充は、ホスト様から清掃会社へ直接ご依頼いただきます（弊社の対応範囲外です）。<br>※ 運営開始前に清掃会社の紹介が必要な場合は、お問い合わせフォームの「業者紹介」からお申し込みください（弊社とのご契約が前提です）。</div>
         <div class="opts">
           <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で手配・確認できる</span></button>
           <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">自動でやってほしい・手間を減らしたい</span></button>
@@ -522,7 +522,7 @@ const OPTIONS = [
     yes:'もう掲載できている／自分で作れる', no:'プロにきれいに作ってほしい' },
 
   { id:'op2', cat:'開業準備', name:'予約システムの連携設定', includedInSetup:true,
-    desc:'複数の予約サイトに掲載すると、予約状況をまとめて管理する仕組み（Beds24）が必要です。これがないと、同じ日に二重予約が入ってしまうことがあります。各サイトとの接続設定はやや専門的な作業です。',
+    desc:'複数の予約サイトに掲載すると、予約状況をまとめて管理する仕組み（Beds24）が必要です。これがないと、同じ日に二重予約が入ってしまうことがあります。各サイトとの接続設定はやや専門的な作業です。<br><strong>※ スタンダード・プレミアムをご契約の場合は、掲載サイトがAirbnbのみ・Bookingのみであっても、Beds24連携が必須となります</strong>（運営代行・チェックインシステムの前提のため）。',
     price:30000, type:'initial',
     yes:'設定できている／自分でやれる', no:'設定をお願いしたい' },
 
@@ -547,7 +547,7 @@ const OPTIONS = [
     yes:'自分で料金管理できる', no:'面倒な価格調整を任せたい' },
 
   { id:'op7', cat:'運営', name:'ゲストの本人確認',
-    desc:'宿泊者の本人確認は法律で義務づけられています。ビデオ通話で24時間、ゲストの本人確認を代行します。タブレット端末を現地に設置して運用します。',
+    desc:'宿泊者の本人確認は法律で義務づけられています。ビデオ通話で24時間、ゲストの本人確認を代行します。タブレット端末を現地に設置して運用します。<br><strong>※ 旅館業では、対面または同等の方法による本人確認（ビデオ通話など）が必須です。</strong>',
     price:6000, type:'monthly', unit:'/室',
     yes:'自分で本人確認できる', no:'代行してほしい' }
 ];
