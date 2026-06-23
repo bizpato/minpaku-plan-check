@@ -284,6 +284,46 @@
     text-align:center;font-size:12px;font-weight:400;
     color:var(--light);letter-spacing:.25em;margin-top:48px;padding-bottom:10px;
   }
+
+  /* ===== Contact Form ===== */
+  .contact-form{
+    background:var(--white);border:1px solid var(--line);border-radius:20px;
+    padding:36px 32px;margin-bottom:22px;
+  }
+  .contact-form h3{font-size:18px;font-weight:700;margin-bottom:6px;color:var(--navy);display:flex;align-items:center;gap:12px;}
+  .contact-form .h-ic{
+    width:42px;height:42px;border-radius:50%;background:var(--sky-light);
+    display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--navy);flex-shrink:0;
+  }
+  .contact-form .cf-sub{font-size:14px;color:var(--mid);margin-bottom:22px;padding-left:54px;}
+  .cf-row{display:flex;gap:14px;margin-bottom:16px;}
+  .cf-field{display:flex;flex-direction:column;flex:1;gap:6px;}
+  .cf-field label{font-size:13px;font-weight:700;color:var(--navy);letter-spacing:.04em;}
+  .cf-field input{
+    padding:14px 16px;border:2px solid var(--line);border-radius:12px;
+    font-size:16px;font-family:inherit;color:var(--navy);background:var(--white);
+    transition:border-color .2s;
+  }
+  .cf-field input:focus{outline:none;border-color:var(--navy);}
+  .cf-field input.error{border-color:var(--red);}
+  .cf-err{font-size:12px;color:var(--red);margin-top:4px;display:none;}
+  .cf-field input.error + .cf-err{display:block;}
+  .btn-send{
+    width:100%;padding:20px;border-radius:14px;font-size:17px;font-weight:700;
+    cursor:pointer;border:none;font-family:inherit;letter-spacing:.04em;
+    background:var(--red);color:var(--white);margin-top:8px;
+    transition:all .2s;
+  }
+  .btn-send:hover{background:#d43a29;transform:translateY(-1px);}
+  .btn-send:disabled{background:#aeb9c7;cursor:not-allowed;transform:none;}
+  .send-status{text-align:center;font-size:14px;margin-top:14px;line-height:1.8;}
+  .send-status.ok{color:var(--green);font-weight:700;}
+  .send-status.err{color:var(--red);}
+  @media(max-width:520px){
+    .cf-row{flex-direction:column;gap:10px;}
+    .contact-form{padding:26px 20px;}
+  }
+
   .disclaimer{
     font-size:12px;color:var(--light);text-align:center;
     margin-top:18px;line-height:1.8;
@@ -480,6 +520,33 @@
       <div class="pb-tag">＋ さらに上のプランをお探しの方へ</div>
       <h4>プレミアムプラン（フルおまかせ）</h4>
       <p><strong>旅館業</strong>で、東京都23区内の同じ建物に<strong>3室以上</strong>をお持ちの方は、ゲスト対応から清掃・価格調整まですべておまかせいただける成果報酬型のプレミアムプランもご用意しています。詳しくは無料相談でご案内します。</p>
+    </div>
+
+    <!-- ===== お客様情報フォーム ===== -->
+    <div class="contact-form" id="contactForm">
+      <h3><span class="h-ic"><i class="fa-solid fa-envelope"></i></span>診断結果を送信する</h3>
+      <div class="cf-sub">お名前とメールアドレスをご入力ください。担当者より折り返しご連絡いたします。</div>
+      <div class="cf-row">
+        <div class="cf-field">
+          <label for="cfLastName">姓 <span style="color:var(--red)">*</span></label>
+          <input type="text" id="cfLastName" placeholder="山田" autocomplete="family-name">
+          <span class="cf-err">姓を入力してください</span>
+        </div>
+        <div class="cf-field">
+          <label for="cfFirstName">名 <span style="color:var(--red)">*</span></label>
+          <input type="text" id="cfFirstName" placeholder="太郎" autocomplete="given-name">
+          <span class="cf-err">名を入力してください</span>
+        </div>
+      </div>
+      <div class="cf-row">
+        <div class="cf-field">
+          <label for="cfEmail">メールアドレス <span style="color:var(--red)">*</span></label>
+          <input type="email" id="cfEmail" placeholder="example@email.com" autocomplete="email">
+          <span class="cf-err">正しいメールアドレスを入力してください</span>
+        </div>
+      </div>
+      <button class="btn-send" id="sendBtn">診断結果を送信して無料相談を申し込む <i class="fa-solid fa-arrow-right" style="margin-left:8px;"></i></button>
+      <div class="send-status" id="sendStatus"></div>
     </div>
 
     <div class="cta-final">
@@ -953,6 +1020,103 @@ function buildResult(){
   }
   document.getElementById('resEstNote').innerHTML=note;
 }
+
+// ===== Webhook送信 =====
+const N8N_WEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL_HERE'; // ← n8nのWebhook URLに差し替えてください
+
+function buildSummaryText(){
+  const ftLabel = formType==='ryokan'?'旅館業（簡易宿所など）':formType==='minpaku'?'住宅宿泊事業法（民泊新法）':'まだ決めていない・わからない';
+  let ciLabel = '（対象外）';
+  if(formType==='ryokan') ciLabel = baseNeeded==='yes'?'弊社にお任せ':'自分で用意する／もうある';
+  const gLabel = planAnswers[0]==='yes'?'自分でできる':'弊社に任せたい';
+  const cLabel = planAnswers[1]==='yes'?'自分でできる':'弊社に任せたい';
+  const rLabel = planAnswers[2]==='yes'?'自分でできる':'弊社に任せたい';
+  const locLabel = location23==='in'?'東京23区内':'東京23区外';
+  const valMap = {yes:'自分でできる（不要）',maybe:'わからない・不安',no:'弊社に任せたい'};
+  let optLines = '';
+  OPTIONS.forEach(op=>{
+    const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
+    if(card && card.style.display!=='none' && optAnswers[op.id]){
+      optLines += `\n　${op.name}：${valMap[optAnswers[op.id]]||optAnswers[op.id]}`;
+    }
+  });
+  return `■ 営業形態\n　${ftLabel}\n\n■ チェックインの自動化\n　${ciLabel}\n\n■ ゲスト対応\n　${gLabel}\n\n■ 清掃の手配\n　${cLabel}\n\n■ 口コミ対応\n　${rLabel}\n\n■ 物件所在地\n　${locLabel}\n\n■ オプション回答${optLines}`;
+}
+
+function buildPayload(lastName, firstName, email){
+  const ftLabel = formType==='ryokan'?'旅館業（簡易宿所など）':formType==='minpaku'?'住宅宿泊事業法（民泊新法）':'まだ決めていない・わからない';
+  let ciLabel = '（対象外）';
+  if(formType==='ryokan') ciLabel = baseNeeded==='yes'?'弊社にお任せ':'自分で用意する／もうある';
+  const gLabel = planAnswers[0]==='yes'?'自分でできる':'弊社に任せたい';
+  const cLabel = planAnswers[1]==='yes'?'自分でできる':'弊社に任せたい';
+  const rLabel = planAnswers[2]==='yes'?'自分でできる':'弊社に任せたい';
+  const locLabel = location23==='in'?'東京23区内':'東京23区外';
+  const valMap = {yes:'自分でできる（不要）',maybe:'わからない・不安',no:'弊社に任せたい'};
+  const optsObj = {};
+  OPTIONS.forEach(op=>{
+    const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
+    if(card && card.style.display!=='none' && optAnswers[op.id]){
+      optsObj[op.name] = valMap[optAnswers[op.id]]||optAnswers[op.id];
+    }
+  });
+  const allYes = planAnswers.every(a=>a==='yes');
+  const planKey = (baseNeeded==='no'&&allYes)?'none':allYes?'basic':'standard';
+  const planData = planKey!=='none'?PLAN[planKey]:null;
+  const recommended = OPTIONS.filter(op=>optAnswers[op.id]==='maybe'||optAnswers[op.id]==='no').map(op=>op.name);
+  return {
+    timestamp: new Date().toISOString(),
+    contact: { lastName, firstName, email },
+    diagnosis: {
+      formType: ftLabel,
+      checkinNeeded: ciLabel,
+      operationAnswers: { guest: gLabel, cleaning: cLabel, review: rLabel },
+      location: locLabel,
+      options: optsObj
+    },
+    result: {
+      planName: planData?planData.name:'プランなし',
+      initialFee: planData?planData.initial:0,
+      monthlyFee: planData?planData.monthly:0,
+      recommendedOptions: recommended
+    },
+    summaryText: buildSummaryText()
+  };
+}
+
+document.getElementById('sendBtn').addEventListener('click', async ()=>{
+  const lastName  = document.getElementById('cfLastName').value.trim();
+  const firstName = document.getElementById('cfFirstName').value.trim();
+  const email     = document.getElementById('cfEmail').value.trim();
+  let valid = true;
+  ['cfLastName','cfFirstName','cfEmail'].forEach(id=>document.getElementById(id).classList.remove('error'));
+  if(!lastName){  document.getElementById('cfLastName').classList.add('error');  valid=false; }
+  if(!firstName){ document.getElementById('cfFirstName').classList.add('error'); valid=false; }
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){ document.getElementById('cfEmail').classList.add('error'); valid=false; }
+  if(!valid) return;
+  const btn = document.getElementById('sendBtn');
+  const status = document.getElementById('sendStatus');
+  btn.disabled=true;
+  btn.textContent='送信中...';
+  status.className='send-status';
+  status.textContent='';
+  try{
+    const res = await fetch(N8N_WEBHOOK_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(buildPayload(lastName,firstName,email))
+    });
+    if(res.ok){
+      status.className='send-status ok';
+      status.textContent='✓ 送信が完了しました。担当者よりご連絡いたします。';
+      btn.textContent='送信済み';
+    }else{ throw new Error('server '+res.status); }
+  }catch(e){
+    status.className='send-status err';
+    status.textContent='送信に失敗しました。お手数ですが、直接お問い合わせください。';
+    btn.disabled=false;
+    btn.innerHTML='診断結果を送信して無料相談を申し込む <i class="fa-solid fa-arrow-right" style="margin-left:8px;"></i>';
+  }
+});
 </script>
 </body>
 </html>

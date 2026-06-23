@@ -1,0 +1,152 @@
+{
+  "name": "かんたんプラン診断 - Webhook受信・メール送信・スプレッドシート追記",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "minpaku-plan-check",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "minpaku-plan-check"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== データ整形ノード =====\nconst body = $input.first().json.body;\n\n// タイムスタンプ → JST変換\nconst dt = new Date(body.timestamp);\nconst jst = new Date(dt.getTime() + 9 * 60 * 60 * 1000);\nconst pad = (n) => String(n).padStart(2, '0');\nconst timestampJST = `${jst.getUTCFullYear()}/${pad(jst.getUTCMonth()+1)}/${pad(jst.getUTCDate())} ${pad(jst.getUTCHours())}:${pad(jst.getUTCMinutes())}`;\n\n// options の各キーを取り出し（存在しない場合は空文字）\nconst opts = body.diagnosis.options || {};\nconst optSetup         = opts['初期セットアップ']          || '';\nconst optListing       = opts['予約サイトへの掲載']        || '';\nconst optBeds24        = opts['予約システムの連携設定']    || '';\nconst optManual        = opts['ハウスマニュアルの作成']    || '';\nconst optPhoto         = opts['物件写真の撮影']            || '';\nconst optEvacuation    = opts['避難経路図の作成']          || '';\nconst optPricing       = opts['宿泊料金の調整']            || '';\nconst optIdentity      = opts['ゲストの本人確認']          || '';\n\n// recommendedOptions 配列 → カンマ区切り文字列\nconst recommendedStr = (body.result.recommendedOptions || []).join('、');\n\n// メール本文\nconst emailBody = `かんたんプラン診断より、新規のお問い合わせがありました。\n\n━━━━━━━━━━━━━━\n【お客様情報】\n━━━━━━━━━━━━━━\n姓　　　：${body.contact.lastName}\n名　　　：${body.contact.firstName}\nメール　：${body.contact.email}\n送信日時：${timestampJST}\n\n━━━━━━━━━━━━━━\n【診断回答内容】\n━━━━━━━━━━━━━━\n${body.summaryText}\n\n---\n本メールはn8n自動送信です。`;\n\nreturn [{\n  json: {\n    // メール用\n    emailSubject: `【かんたんプラン診断】新規お問い合わせ - ${body.contact.lastName} ${body.contact.firstName} 様`,\n    emailBody,\n    toEmail: 'consulter@bizpato.com',\n    // スプレッドシート用\n    timestampJST,\n    lastName:    body.contact.lastName,\n    firstName:   body.contact.firstName,\n    email:       body.contact.email,\n    formType:    body.diagnosis.formType,\n    checkinNeeded: body.diagnosis.checkinNeeded,\n    opGuest:     body.diagnosis.operationAnswers.guest,\n    opCleaning:  body.diagnosis.operationAnswers.cleaning,\n    opReview:    body.diagnosis.operationAnswers.review,\n    location:    body.diagnosis.location,\n    optSetup,\n    optListing,\n    optBeds24,\n    optManual,\n    optPhoto,\n    optEvacuation,\n    optPricing,\n    optIdentity,\n    planName:    body.result.planName,\n    initialFee:  body.result.initialFee,\n    monthlyFee:  body.result.monthlyFee,\n    recommendedStr\n  }\n}];"
+      },
+      "id": "code-node",
+      "name": "データ整形",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.toEmail }}",
+        "subject": "={{ $json.emailSubject }}",
+        "emailType": "text",
+        "message": "={{ $json.emailBody }}",
+        "options": {}
+      },
+      "id": "gmail-node",
+      "name": "Gmail送信",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [720, 180],
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1zZQ9_0Enn2Wd-dIjnGBpFXZ_LLVRQBOG8c1EszvM4ME",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "送信日時":              "={{ $json.timestampJST }}",
+            "姓":                    "={{ $json.lastName }}",
+            "名":                    "={{ $json.firstName }}",
+            "メールアドレス":        "={{ $json.email }}",
+            "営業形態":              "={{ $json.formType }}",
+            "チェックイン要否":      "={{ $json.checkinNeeded }}",
+            "ゲスト対応":            "={{ $json.opGuest }}",
+            "清掃のやりとり":        "={{ $json.opCleaning }}",
+            "口コミ対応":            "={{ $json.opReview }}",
+            "物件所在地":            "={{ $json.location }}",
+            "初期セットアップ":      "={{ $json.optSetup }}",
+            "予約サイトへの掲載":    "={{ $json.optListing }}",
+            "予約システムの連携設定":"={{ $json.optBeds24 }}",
+            "ハウスマニュアルの作成":"={{ $json.optManual }}",
+            "物件写真の撮影":        "={{ $json.optPhoto }}",
+            "避難経路図の作成":      "={{ $json.optEvacuation }}",
+            "宿泊料金の調整":        "={{ $json.optPricing }}",
+            "ゲストの本人確認":      "={{ $json.optIdentity }}",
+            "おすすめプラン":        "={{ $json.planName }}",
+            "初期費用":              "={{ $json.initialFee }}",
+            "月額費用":              "={{ $json.monthlyFee }}",
+            "おすすめオプション":    "={{ $json.recommendedStr }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {
+          "valueInputMode": "RAW"
+        }
+      },
+      "id": "sheets-node",
+      "name": "Googleスプレッドシート追記",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [720, 420],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'ok' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-node",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [960, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "データ整形", "type": "main", "index": 0 }]
+      ]
+    },
+    "データ整形": {
+      "main": [
+        [
+          { "node": "Gmail送信", "type": "main", "index": 0 },
+          { "node": "Googleスプレッドシート追記", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Gmail送信": {
+      "main": [
+        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Googleスプレッドシート追記": {
+      "main": [
+        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-06-23T00:00:00.000Z",
+  "versionId": "1"
+}
