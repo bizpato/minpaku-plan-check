@@ -1,0 +1,140 @@
+{
+  "name": "かんたんプラン診断A - 新規向け",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "minpaku-plan-check-new",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-node-a",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "webhookId": "minpaku-plan-check-new"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\n// JST変換\nconst dt = new Date(body.timestamp || new Date().toISOString());\nconst jst = new Date(dt.getTime() + 9 * 60 * 60 * 1000);\nconst pad = n => String(n).padStart(2,'0');\nconst jstStr = `${jst.getUTCFullYear()}/${pad(jst.getUTCMonth()+1)}/${pad(jst.getUTCDate())} ${pad(jst.getUTCHours())}:${pad(jst.getUTCMinutes())}`;\n\nconst c = body.contact || {};\nconst d = body.diagnosis || {};\nconst ops = d.operationAnswers || {};\nconst opts = d.options || {};\nconst r = body.result || {};\n\n// メール本文（社内）\nconst mailBody = `かんたんプラン診断より、新規のお問い合わせがありました。\n\n━━━━━━━━━━━━━━\n【お客様情報】\n━━━━━━━━━━━━━━\n姓　　　：${c.lastName || ''}\n名　　　：${c.firstName || ''}\nメール　：${c.email || ''}\n送信日時：${jstStr}\n\n━━━━━━━━━━━━━━\n【診断回答内容】\n━━━━━━━━━━━━━━\n${body.summaryText || ''}\n\n---\n本メールはn8n自動送信です。`;\n\nreturn [{\n  json: {\n    jstStr,\n    lastName: c.lastName || '',\n    firstName: c.firstName || '',\n    email: c.email || '',\n    formType: d.formType || '',\n    checkinNeeded: d.checkinNeeded || '',\n    guest: ops.guest || '',\n    cleaning: ops.cleaning || '',\n    review: ops.review || '',\n    location: d.location || '',\n    opt_setup: opts['初期セットアップ'] || '',\n    opt_booking: opts['予約サイトへの掲載'] || '',\n    opt_system: opts['予約システムの連携設定'] || '',\n    opt_manual: opts['ハウスマニュアルの作成'] || '',\n    opt_photo: opts['物件写真の撮影'] || '',\n    opt_evacuation: opts['避難経路図の作成'] || '',\n    opt_price: opts['宿泊料金の調整'] || '',\n    opt_identity: opts['ゲストの本人確認'] || '',\n    planName: r.planName || '',\n    initialFee: r.initialFee || '',\n    monthlyFee: r.monthlyFee || '',\n    recommendedOptions: (r.recommendedOptions || []).join(', '),\n    kubun: '新規',\n    mailSubject: `【かんたんプラン診断】新規お問い合わせ - ${c.lastName || ''} ${c.firstName || ''} 様`,\n    mailBody\n  }\n}];\n"
+      },
+      "id": "code-node-a",
+      "name": "データ整形",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [60, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "consulter@bizpato.com",
+        "subject": "={{ $json.mailSubject }}",
+        "message": "={{ $json.mailBody }}",
+        "options": {}
+      },
+      "id": "gmail-node-a",
+      "name": "Gmail送信（社内）",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [320, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wXqGqxnfbdFfUhLV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1zZQ9_0Enn2Wd-dIjnGBpFXZ_LLVRQBOG8c1EszvM4ME",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "送信日時": "={{ $json.jstStr }}",
+            "姓": "={{ $json.lastName }}",
+            "名": "={{ $json.firstName }}",
+            "メールアドレス": "={{ $json.email }}",
+            "営業形態": "={{ $json.formType }}",
+            "チェックイン要否": "={{ $json.checkinNeeded }}",
+            "ゲスト対応": "={{ $json.guest }}",
+            "清掃のやりとり": "={{ $json.cleaning }}",
+            "口コミ対応": "={{ $json.review }}",
+            "物件所在地": "={{ $json.location }}",
+            "初期セットアップ": "={{ $json.opt_setup }}",
+            "予約サイトへの掲載": "={{ $json.opt_booking }}",
+            "予約システムの連携設定": "={{ $json.opt_system }}",
+            "ハウスマニュアルの作成": "={{ $json.opt_manual }}",
+            "物件写真の撮影": "={{ $json.opt_photo }}",
+            "避難経路図の作成": "={{ $json.opt_evacuation }}",
+            "宿泊料金の調整": "={{ $json.opt_price }}",
+            "ゲストの本人確認": "={{ $json.opt_identity }}",
+            "おすすめプラン": "={{ $json.planName }}",
+            "初期費用": "={{ $json.initialFee }}",
+            "月額費用": "={{ $json.monthlyFee }}",
+            "おすすめオプション": "={{ $json.recommendedOptions }}",
+            "区分": "={{ $json.kubun }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {
+          "valueInputMode": "RAW"
+        }
+      },
+      "id": "sheets-node-a",
+      "name": "Googleスプレッドシート追記",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [580, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "n6CbIm9f7scqnBat",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"ok\"}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-node-a",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [840, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "データ整形", "type": "main", "index": 0}]]
+    },
+    "データ整形": {
+      "main": [[{"node": "Gmail送信（社内）", "type": "main", "index": 0}]]
+    },
+    "Gmail送信（社内）": {
+      "main": [[{"node": "Googleスプレッドシート追記", "type": "main", "index": 0}]]
+    },
+    "Googleスプレッドシート追記": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": ""
+  },
+  "staticData": null
+}

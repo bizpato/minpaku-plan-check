@@ -1,0 +1,167 @@
+{
+  "name": "かんたんプラン診断B - フォローアップ向け",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "minpaku-plan-check-followup",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-node-b",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-200, 300],
+      "webhookId": "minpaku-plan-check-followup"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\n// JST変換\nconst dt = new Date(body.timestamp || new Date().toISOString());\nconst jst = new Date(dt.getTime() + 9 * 60 * 60 * 1000);\nconst pad = n => String(n).padStart(2,'0');\nconst jstStr = `${jst.getUTCFullYear()}/${pad(jst.getUTCMonth()+1)}/${pad(jst.getUTCDate())} ${pad(jst.getUTCHours())}:${pad(jst.getUTCMinutes())}`;\n\nconst c = body.contact || {};\nconst d = body.diagnosis || {};\nconst ops = d.operationAnswers || {};\nconst opts = d.options || {};\nconst r = body.result || {};\n\n// 社内メール本文\nconst mailBodyInternal = `お問い合わせ済みのお客様から、かんたんプラン診断の回答がありました。\n\n━━━━━━━━━━━━━━\n【お客様情報】\n━━━━━━━━━━━━━━\n姓　　　：${c.lastName || ''}\n名　　　：${c.firstName || ''}\nメール　：${c.email || ''}\n送信日時：${jstStr}\n※お客様にも同内容のメールを送信済みです。\n\n━━━━━━━━━━━━━━\n【診断回答内容】\n━━━━━━━━━━━━━━\n${body.summaryText || ''}\n\n---\n本メールはn8n自動送信です。`;\n\n// お客様メール本文\nconst recOpts = (r.recommendedOptions || []).length > 0 ? r.recommendedOptions.join('、') : '追加サポートなし';\nconst initialFeeStr = (r.initialFee || 0).toLocaleString();\nconst monthlyFeeStr = (r.monthlyFee || 0).toLocaleString();\nconst mailBodyCustomer = `${c.lastName || ''} ${c.firstName || ''} 様\n\nこのたびは、民泊管理バンクの「かんたんプラン診断」をご活用いただき、誠にありがとうございます。\n診断結果をご案内いたします。\n\n━━━━━━━━━━━━━━\n【診断結果】\n━━━━━━━━━━━━━━\n\n■ おすすめプラン\n　${r.planName || ''}\n\n■ 概算お見積り（税抜）\n　初期費用：${initialFeeStr}円\n　月額費用：${monthlyFeeStr}円\n\n■ おすすめのサポート\n　${recOpts}\n\n━━━━━━━━━━━━━━\n【診断でご選択いただいた内容】\n━━━━━━━━━━━━━━\n${body.summaryText || ''}\n\n━━━━━━━━━━━━━━\n\n※ 本診断の結果・概算金額はあくまで目安です。\n※ 表示金額はすべて税抜・1物件あたりです。別途、Beds24・PriceLabs等の実費が発生します。\n\n診断結果は弊社担当者にも共有されているため、\n担当者よりあらためてご連絡させていただきます。\nご不明点がございましたら、本メールに返信いただくか、下記までお気軽にお問い合わせください。\n\n今後ともよろしくお願いいたします。\n\n────────────────────\n民泊管理バンク\nconsulter@bizpato.com\n────────────────────`;\n\nreturn [{\n  json: {\n    jstStr,\n    lastName: c.lastName || '',\n    firstName: c.firstName || '',\n    email: c.email || '',\n    formType: d.formType || '',\n    checkinNeeded: d.checkinNeeded || '',\n    guest: ops.guest || '',\n    cleaning: ops.cleaning || '',\n    review: ops.review || '',\n    location: d.location || '',\n    opt_setup: opts['初期セットアップ'] || '',\n    opt_booking: opts['予約サイトへの掲載'] || '',\n    opt_system: opts['予約システムの連携設定'] || '',\n    opt_manual: opts['ハウスマニュアルの作成'] || '',\n    opt_photo: opts['物件写真の撮影'] || '',\n    opt_evacuation: opts['避難経路図の作成'] || '',\n    opt_price: opts['宿泊料金の調整'] || '',\n    opt_identity: opts['ゲストの本人確認'] || '',\n    planName: r.planName || '',\n    initialFee: r.initialFee || '',\n    monthlyFee: r.monthlyFee || '',\n    recommendedOptions: (r.recommendedOptions || []).join(', '),\n    kubun: 'フォロー',\n    mailSubjectInternal: `【かんたんプラン診断・フォロー】診断結果 - ${c.lastName || ''} ${c.firstName || ''} 様`,\n    mailBodyInternal,\n    mailSubjectCustomer: '【民泊管理バンク】かんたんプラン診断の結果のご案内',\n    mailBodyCustomer\n  }\n}];\n"
+      },
+      "id": "code-node-b",
+      "name": "データ整形",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [60, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "consulter@bizpato.com",
+        "subject": "={{ $json.mailSubjectInternal }}",
+        "message": "={{ $json.mailBodyInternal }}",
+        "options": {}
+      },
+      "id": "gmail-internal-b",
+      "name": "Gmail送信（社内）",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [320, 180],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wXqGqxnfbdFfUhLV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.mailSubjectCustomer }}",
+        "message": "={{ $json.mailBodyCustomer }}",
+        "options": {
+          "replyTo": "consulter@bizpato.com"
+        }
+      },
+      "id": "gmail-customer-b",
+      "name": "Gmail送信（お客様）",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [320, 420],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wXqGqxnfbdFfUhLV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1zZQ9_0Enn2Wd-dIjnGBpFXZ_LLVRQBOG8c1EszvM4ME",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "送信日時": "={{ $('データ整形').item.json.jstStr }}",
+            "姓": "={{ $('データ整形').item.json.lastName }}",
+            "名": "={{ $('データ整形').item.json.firstName }}",
+            "メールアドレス": "={{ $('データ整形').item.json.email }}",
+            "営業形態": "={{ $('データ整形').item.json.formType }}",
+            "チェックイン要否": "={{ $('データ整形').item.json.checkinNeeded }}",
+            "ゲスト対応": "={{ $('データ整形').item.json.guest }}",
+            "清掃のやりとり": "={{ $('データ整形').item.json.cleaning }}",
+            "口コミ対応": "={{ $('データ整形').item.json.review }}",
+            "物件所在地": "={{ $('データ整形').item.json.location }}",
+            "初期セットアップ": "={{ $('データ整形').item.json.opt_setup }}",
+            "予約サイトへの掲載": "={{ $('データ整形').item.json.opt_booking }}",
+            "予約システムの連携設定": "={{ $('データ整形').item.json.opt_system }}",
+            "ハウスマニュアルの作成": "={{ $('データ整形').item.json.opt_manual }}",
+            "物件写真の撮影": "={{ $('データ整形').item.json.opt_photo }}",
+            "避難経路図の作成": "={{ $('データ整形').item.json.opt_evacuation }}",
+            "宿泊料金の調整": "={{ $('データ整形').item.json.opt_price }}",
+            "ゲストの本人確認": "={{ $('データ整形').item.json.opt_identity }}",
+            "おすすめプラン": "={{ $('データ整形').item.json.planName }}",
+            "初期費用": "={{ $('データ整形').item.json.initialFee }}",
+            "月額費用": "={{ $('データ整形').item.json.monthlyFee }}",
+            "おすすめオプション": "={{ $('データ整形').item.json.recommendedOptions }}",
+            "区分": "={{ $('データ整形').item.json.kubun }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {
+          "valueInputMode": "RAW"
+        }
+      },
+      "id": "sheets-node-b",
+      "name": "Googleスプレッドシート追記",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [580, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "n6CbIm9f7scqnBat",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"ok\"}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-node-b",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [840, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "データ整形", "type": "main", "index": 0}]]
+    },
+    "データ整形": {
+      "main": [[
+        {"node": "Gmail送信（社内）", "type": "main", "index": 0},
+        {"node": "Gmail送信（お客様）", "type": "main", "index": 0}
+      ]]
+    },
+    "Gmail送信（社内）": {
+      "main": [[{"node": "Googleスプレッドシート追記", "type": "main", "index": 0}]]
+    },
+    "Gmail送信（お客様）": {
+      "main": [[{"node": "Googleスプレッドシート追記", "type": "main", "index": 0}]]
+    },
+    "Googleスプレッドシート追記": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": ""
+  },
+  "staticData": null
+}
