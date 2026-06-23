@@ -274,6 +274,67 @@
     text-decoration:none;transition:transform .18s;letter-spacing:.03em;
   }
   .cta-final a:hover{transform:translateY(-2px);}
+
+  /* 送信フォーム */
+  .send-form{text-align:left;max-width:420px;margin:0 auto;}
+  .form-row{display:flex;gap:14px;}
+  .form-field{flex:1;margin-bottom:18px;}
+  .form-field label{
+    display:block;font-size:14px;font-weight:700;color:var(--navy);
+    margin-bottom:8px;letter-spacing:.02em;
+  }
+  .form-field .req{
+    display:inline-block;background:#fdeceb;color:var(--red);
+    font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px;
+  }
+  .form-field input{
+    width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:12px;
+    font-size:16px;font-family:inherit;color:var(--navy);background:var(--bg);
+    transition:border-color .2s;box-sizing:border-box;
+  }
+  .form-field input:focus{outline:none;border-color:var(--navy);background:var(--white);}
+  .form-field input.err{border-color:var(--red);}
+  .form-error{
+    color:var(--red);font-size:13px;margin-bottom:14px;min-height:18px;line-height:1.6;
+  }
+  .send-btn{
+    width:100%;background:var(--red);color:var(--white);
+    font-size:17px;font-weight:700;padding:18px;border-radius:99px;border:none;
+    cursor:pointer;transition:transform .18s,opacity .2s;letter-spacing:.03em;font-family:inherit;
+  }
+  .send-btn:hover{transform:translateY(-2px);}
+  .send-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+  .send-status{
+    text-align:center;font-size:14px;margin-top:16px;line-height:1.7;min-height:20px;
+  }
+  .send-status.success{color:var(--green);font-weight:700;}
+  .send-status.error{color:var(--red);}
+
+  /* 送信完了後の無料相談フォーム誘導 */
+  .post-send{
+    margin-top:26px;padding:28px 24px;background:var(--sky-light);
+    border-radius:16px;text-align:center;animation:fade .4s ease;
+  }
+  .post-send .post-send-tag{
+    display:inline-block;font-size:11px;font-weight:700;color:var(--navy);
+    background:var(--white);padding:5px 14px;border-radius:99px;
+    letter-spacing:.12em;margin-bottom:14px;
+  }
+  .post-send h4{
+    font-size:18px;font-weight:700;color:var(--navy);margin-bottom:10px;line-height:1.55;
+  }
+  .post-send p{
+    font-size:14px;color:var(--text);line-height:1.85;margin-bottom:20px;
+  }
+  .post-send p strong{color:var(--navy);font-weight:700;}
+  .post-send-btn{
+    display:inline-block;background:var(--red);color:var(--white);
+    font-size:16px;font-weight:700;padding:16px 36px;border-radius:99px;
+    text-decoration:none;transition:transform .18s,filter .2s;letter-spacing:.02em;
+  }
+  .post-send-btn:hover{transform:translateY(-2px);filter:brightness(1.08);}
+  .post-send-btn i{margin-left:10px;font-size:13px;}
+
   .retry{text-align:center;margin-top:26px;}
   .retry button{
     background:none;border:none;color:var(--mid);font-size:14px;
@@ -284,46 +345,6 @@
     text-align:center;font-size:12px;font-weight:400;
     color:var(--light);letter-spacing:.25em;margin-top:48px;padding-bottom:10px;
   }
-
-  /* ===== Contact Form ===== */
-  .contact-form{
-    background:var(--white);border:1px solid var(--line);border-radius:20px;
-    padding:36px 32px;margin-bottom:22px;
-  }
-  .contact-form h3{font-size:18px;font-weight:700;margin-bottom:6px;color:var(--navy);display:flex;align-items:center;gap:12px;}
-  .contact-form .h-ic{
-    width:42px;height:42px;border-radius:50%;background:var(--sky-light);
-    display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--navy);flex-shrink:0;
-  }
-  .contact-form .cf-sub{font-size:14px;color:var(--mid);margin-bottom:22px;padding-left:54px;}
-  .cf-row{display:flex;gap:14px;margin-bottom:16px;}
-  .cf-field{display:flex;flex-direction:column;flex:1;gap:6px;}
-  .cf-field label{font-size:13px;font-weight:700;color:var(--navy);letter-spacing:.04em;}
-  .cf-field input{
-    padding:14px 16px;border:2px solid var(--line);border-radius:12px;
-    font-size:16px;font-family:inherit;color:var(--navy);background:var(--white);
-    transition:border-color .2s;
-  }
-  .cf-field input:focus{outline:none;border-color:var(--navy);}
-  .cf-field input.error{border-color:var(--red);}
-  .cf-err{font-size:12px;color:var(--red);margin-top:4px;display:none;}
-  .cf-field input.error + .cf-err{display:block;}
-  .btn-send{
-    width:100%;padding:20px;border-radius:14px;font-size:17px;font-weight:700;
-    cursor:pointer;border:none;font-family:inherit;letter-spacing:.04em;
-    background:var(--red);color:var(--white);margin-top:8px;
-    transition:all .2s;
-  }
-  .btn-send:hover{background:#d43a29;transform:translateY(-1px);}
-  .btn-send:disabled{background:#aeb9c7;cursor:not-allowed;transform:none;}
-  .send-status{text-align:center;font-size:14px;margin-top:14px;line-height:1.8;}
-  .send-status.ok{color:var(--green);font-weight:700;}
-  .send-status.err{color:var(--red);}
-  @media(max-width:520px){
-    .cf-row{flex-direction:column;gap:10px;}
-    .contact-form{padding:26px 20px;}
-  }
-
   .disclaimer{
     font-size:12px;color:var(--light);text-align:center;
     margin-top:18px;line-height:1.8;
@@ -522,37 +543,34 @@
       <p><strong>旅館業</strong>で、東京都23区内の同じ建物に<strong>3室以上</strong>をお持ちの方は、ゲスト対応から清掃・価格調整まですべておまかせいただける成果報酬型のプレミアムプランもご用意しています。詳しくは無料相談でご案内します。</p>
     </div>
 
-    <!-- ===== お客様情報フォーム ===== -->
-    <div class="contact-form" id="contactForm">
-      <h3><span class="h-ic"><i class="fa-solid fa-envelope"></i></span>診断結果を送信する</h3>
-      <div class="cf-sub">お名前とメールアドレスをご入力ください。担当者より折り返しご連絡いたします。</div>
-      <div class="cf-row">
-        <div class="cf-field">
-          <label for="cfLastName">姓 <span style="color:var(--red)">*</span></label>
-          <input type="text" id="cfLastName" placeholder="山田" autocomplete="family-name">
-          <span class="cf-err">姓を入力してください</span>
-        </div>
-        <div class="cf-field">
-          <label for="cfFirstName">名 <span style="color:var(--red)">*</span></label>
-          <input type="text" id="cfFirstName" placeholder="太郎" autocomplete="given-name">
-          <span class="cf-err">名を入力してください</span>
-        </div>
-      </div>
-      <div class="cf-row">
-        <div class="cf-field">
-          <label for="cfEmail">メールアドレス <span style="color:var(--red)">*</span></label>
-          <input type="email" id="cfEmail" placeholder="example@email.com" autocomplete="email">
-          <span class="cf-err">正しいメールアドレスを入力してください</span>
-        </div>
-      </div>
-      <button class="btn-send" id="sendBtn">診断結果を送信して無料相談を申し込む <i class="fa-solid fa-arrow-right" style="margin-left:8px;"></i></button>
-      <div class="send-status" id="sendStatus"></div>
-    </div>
-
     <div class="cta-final">
-      <h3>この内容で無料相談する</h3>
-      <p>診断結果をもとに、専門スタッフが正式なお見積りと<br>受託可否をご案内します。相談は無料です。</p>
-      <a href="https://bizpato.com/minpaku/minpaku-lp/lp-order/#form" id="ctaLink" target="_blank" rel="noopener">無料相談を申し込む</a>
+      <h3>診断結果を送る</h3>
+      <p>お名前とメールアドレスをご入力のうえ送信ください。<br>送信後、<strong>無料相談フォーム</strong>へご案内します。診断結果をもとに専門スタッフが正式なお見積りと受託可否をご回答します。</p>
+      <div class="send-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="lastName">姓 <span class="req">必須</span></label>
+            <input type="text" id="lastName" placeholder="山田" autocomplete="family-name">
+          </div>
+          <div class="form-field">
+            <label for="firstName">名 <span class="req">必須</span></label>
+            <input type="text" id="firstName" placeholder="太郎" autocomplete="given-name">
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="email">メールアドレス <span class="req">必須</span></label>
+          <input type="email" id="email" placeholder="example@email.com" autocomplete="email">
+        </div>
+        <div class="form-error" id="formError"></div>
+        <button class="send-btn" id="sendBtn">診断結果を送る</button>
+        <div class="send-status" id="sendStatus"></div>
+        <div class="post-send" id="postSend" style="display:none;">
+          <div class="post-send-tag">NEXT STEP</div>
+          <h4>続いて、無料相談フォームへお進みください</h4>
+          <p>担当者がより詳しくお話をうかがい、<br><strong>正式なお見積り</strong>と<strong>受託可否</strong>をご回答します。<br>ご相談は無料です。お気軽にどうぞ。</p>
+          <a href="https://bizpato.com/minpaku/minpaku-lp/lp-order/#form" target="_blank" rel="noopener" class="post-send-btn">無料相談フォームへ <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
     </div>
 
     <div class="retry">
@@ -560,7 +578,7 @@
     </div>
 
     <p class="disclaimer">
-      ※ 本診断の結果・概算金額はあくまで目安です。正式なプラン・お見積りは、物件の状況や受託可否の確認のうえ、無料相談にて確定いたします。<br>
+      ※ 本診断の結果・概算金額はあくまで目安です。正式なプラン・お見積りは、物件の状況や受託可否の確認のうえ、確定いたします。<br>
       ※ 表示金額はすべて税抜・1物件あたりです。別途、Beds24・PriceLabs等の実費（ホスト様負担）が発生します。
     </p>
   </section>
@@ -574,7 +592,7 @@
 // ===== Data =====
 const PLAN = {
   basic:    { name:'基本プラン',   monthly:19800, initial:34800, tag:'初期セットアップ中心・自分で運営したい方に' },
-  standard: { name:'スタンダード', monthly:69800, initial:34800, tag:'運営をまるごとお任せしたい方に' }
+  standard: { name:'スタンダード', monthly:69800, initial:98000, tag:'運営をまるごとお任せしたい方に' }
 };
 
 const OPTIONS = [
@@ -589,7 +607,7 @@ const OPTIONS = [
     yes:'もう掲載できている／自分で作れる', no:'プロにきれいに作ってほしい' },
 
   { id:'op2', cat:'開業準備', name:'予約システムの連携設定', includedInSetup:true,
-    desc:'複数の予約サイトに掲載すると、予約状況をまとめて管理する仕組み（Beds24）が必要です。これがないと、同じ日に二重予約が入ってしまうことがあります。各サイトとの接続設定はやや専門的な作業です。<br>※ この連携設定は、<strong>予約サイト掲載OP（150,000円）に含まれます</strong>。掲載をご自身で済ませた方が、連携だけを依頼する場合のオプションです。<br>※ スタンダードをご契約の場合は、掲載サイトがAirbnbのみ・Bookingのみであっても、Beds24連携が必須となります。',
+    desc:'複数の予約サイトに掲載すると、予約状況をまとめて管理する仕組み（Beds24）が必要です。これがないと、同じ日に二重予約が入ってしまうことがあります。各サイトとの接続設定はやや専門的な作業です。<br>※ このオプションは、<strong>予約サイト掲載OP（150,000円）に含まれます</strong>。掲載をご自身で済ませた方が、連携だけを依頼する場合のオプションです。<br>※ スタンダードをご契約の場合は、掲載サイトがAirbnbのみ・Bookingのみであっても、Beds24連携が必須となります。',
     price:30000, type:'initial',
     yes:'設定できている／自分でやれる', no:'設定をお願いしたい' },
 
@@ -614,7 +632,7 @@ const OPTIONS = [
     yes:'自分で料金管理できる', no:'面倒な価格調整を任せたい' },
 
   { id:'op7', cat:'運営', name:'ゲストの本人確認',
-    desc:'宿泊者の本人確認は法律で義務づけられています。ビデオ通話で24時間、ゲストの本人確認を代行します。タブレット端末を現地に設置して運用します。<br><strong>※ 旅館業では、対面または同等の方法による本人確認（ビデオ通話など）が必須です。</strong>',
+    desc:'宿泊者の本人確認は法律で義務づけられています。ビデオ通話で24時間、ゲストの本人確認を代行します。タブレット端末を現地に設置して運用します。<br>※ 旅館業では、対面または同等の方法による本人確認（ビデオ通話など）が必須です。<br><strong>※ このオプションは、プラン（基本・スタンダード）とのセット契約が必要です。</strong>',
     price:6000, type:'monthly', unit:'/室',
     yes:'自分で本人確認できる', no:'代行してほしい' }
 ];
@@ -624,6 +642,7 @@ let formType = null;            // 'ryokan'|'minpaku'|'undecided' : 営業形態
 let baseNeeded = null;          // 'yes'|'no' : チェックインを弊社に任せるか（旅館業のみ）
 let planAnswers = [null,null,null];
 let optAnswers = {}; // id -> 'yes'|'maybe'|'no'
+let lastResult = null;  // buildResultで保存される判定結果（送信用）
 
 const checkinBlock = ()=>document.getElementById('checkinBlock');
 const opsBlock = ()=>document.getElementById('opsBlock');
@@ -838,7 +857,7 @@ document.getElementById('toStep2').addEventListener('click',()=>showStep('step2'
 document.getElementById('backToStep1').addEventListener('click',()=>showStep('step1',1));
 document.getElementById('toResult').addEventListener('click',()=>{ buildResult(); showStep('stepResult',3); });
 document.getElementById('retryBtn').addEventListener('click',()=>{
-  formType=null; baseNeeded=null; location23=null; planAnswers=[null,null,null]; optAnswers={};
+  formType=null; baseNeeded=null; location23=null; planAnswers=[null,null,null]; optAnswers={}; lastResult=null;
   document.querySelectorAll('.opt.sel').forEach(b=>b.classList.remove('sel'));
   document.getElementById('checkinBlock').style.display='none';
   document.getElementById('opsBlock').style.display='none';
@@ -847,6 +866,14 @@ document.getElementById('retryBtn').addEventListener('click',()=>{
     const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
     if(card) card.style.display='';
   });
+  // 送信フォームをリセット
+  ['lastName','firstName','email'].forEach(id=>{
+    const el=document.getElementById(id); if(el){ el.value=''; el.classList.remove('err'); }
+  });
+  const sb=document.getElementById('sendBtn'); if(sb){ sb.disabled=false; sb.textContent='診断結果を送る'; }
+  const ss=document.getElementById('sendStatus'); if(ss){ ss.className='send-status'; ss.textContent=''; }
+  const fe=document.getElementById('formError'); if(fe){ fe.textContent=''; }
+  const ps=document.getElementById('postSend'); if(ps){ ps.style.display='none'; }
   document.getElementById('toStep2').disabled=true;
   document.getElementById('toResult').disabled=true;
   showStep('step1',1);
@@ -867,6 +894,14 @@ function buildResult(){
     // 運営を1つでも任せたい → スタンダード（チェックインシステムも含まれる）
     planKey = 'standard';
   }
+
+  // 本人確認OP(op7)はプラン契約必須のため、プランなしで選ばれた場合は基本プランへ自動引き上げ
+  const op7Selected = (optAnswers['op7']==='maybe' || optAnswers['op7']==='no');
+  const upgradedForOp7 = (planKey==='none' && op7Selected);
+  if(upgradedForOp7){
+    planKey = 'basic';
+  }
+
   const plan = (planKey==='none') ? null : PLAN[planKey];
 
   // プレミアム誘導バナー：旅館業 かつ 東京23区内 のみ表示
@@ -894,6 +929,12 @@ function buildResult(){
     dedupNote += '※ 予約サイトへの掲載には予約システムの連携設定が含まれるため、重複分は除いています。';
   }
 
+  // スタンダードは予約サイトSU・連携設定・ハウスマニュアルが無償付帯のため、
+  // recommendedから除外（無償付帯リストで別途表示）
+  if(planKey==='standard'){
+    recommended = recommended.filter(op=>!['op1','op2','op3'].includes(op.id));
+  }
+
   // ===== ヒーロー表示 =====
   if(planKey==='none'){
     document.getElementById('resPlanName').textContent = recommended.length>0 ? '必要なサポートのみ' : 'まずはご相談から';
@@ -916,9 +957,9 @@ function buildResult(){
         <div class="name">${plan.name}<small>基本のプラン料金</small></div>
         <div class="val">月額 ${plan.monthly.toLocaleString()}円</div>
       </div>`);
-    // free perks for standard
+    // free perks for standard（予約サイトSU・ハウスマニュアルが含まれる）
     if(planKey==='standard'){
-      ['OTA自動送信メール作成','ハウスマニュアル作成','保守サービス（月2回まで）'].forEach(p=>{
+      ['予約サイトへの掲載','ハウスマニュアル作成','OTA自動送信メール作成','保守サービス（月2回まで）'].forEach(p=>{
         incEl.insertAdjacentHTML('beforeend',`
           <div class="inc-row">
             <div class="name">${p}<small>スタンダードに無償で付いてきます</small></div>
@@ -932,17 +973,10 @@ function buildResult(){
   let initialSum = plan ? plan.initial : 0;
   let monthlySum = plan ? plan.monthly : 0;
   recommended.forEach(op=>{
-    const isFreeForStandard = (planKey==='standard' && op.id==='op3');
     const priceLabel = op.type==='monthly'
       ? `月額 ${op.price.toLocaleString()}円${op.unit||''}`
       : `${op.price.toLocaleString()}円`;
-    if(isFreeForStandard){
-      incEl.insertAdjacentHTML('beforeend',`
-        <div class="inc-row">
-          <div class="name">${op.name}<small>スタンダードは無償付帯のため追加費用なし</small></div>
-          <div class="free">無償付帯</div>
-        </div>`);
-    }else{
+    {
       incEl.insertAdjacentHTML('beforeend',`
         <div class="inc-row">
           <div class="name">${op.name}<small>${op.id==='op8'?'【東京23区内のみ】予約サイト掲載・写真撮影・ハウスマニュアル等を含むおまかせパック':(op.region?('【'+op.region+'】'):'おすすめのサポート')}</small></div>
@@ -1004,9 +1038,9 @@ function buildResult(){
     if(monthlyOpts.some(op=>op.unit==='/室')){
       note += '<br>※ 本人確認は1室あたりの料金です（4名まで／5名以上は+1,000円/人）。別途タブレット端末費用が発生する場合があります。';
     }
-    // 本人確認OPをプランなしで単品契約 → 名簿スプレッドシート共有が必要
-    if(planKey==='none' && recommended.some(op=>op.id==='op7')){
-      note += '<br>※ プラン契約なしで本人確認のみをご利用の場合、チェックインシステムを使わないため、<strong>宿泊者名簿をスプレッドシートで共有</strong>していただく必要があります。';
+    // 本人確認OP選択によりプランなし→基本プランへ自動引き上げた場合の注記
+    if(upgradedForOp7){
+      note += '<br>※ <strong>本人確認オプションはプラン（基本・スタンダード）契約が必須</strong>のため、見積もりに基本プランの料金を含めています。あわせてチェックインシステム（SmartInn）とBeds24連携が必須となります。スタンダードプランへのアップグレードもご検討いただけます。';
     }
     if(recommended.some(op=>op.id==='op6')){
       note += '<br>※ 料金調整は別途 PriceLabs実費（5,000円/リスティング）がホスト様負担となります。';
@@ -1019,102 +1053,164 @@ function buildResult(){
     }
   }
   document.getElementById('resEstNote').innerHTML=note;
+
+  // ===== 送信用に結果データを保存 =====
+  lastResult = {
+    planKey: planKey,
+    planName: (planKey==='none') ? (recommended.length>0?'必要なサポートのみ（プラン契約なし）':'まずはご相談から（プラン契約なし）') : plan.name,
+    initialSum: (planKey==='none' && recommended.length===0) ? 0 : initialSum,
+    monthlySum: (planKey==='none' && recommended.length===0) ? 0 : monthlySum,
+    recommended: recommended.map(op=>op.name)
+  };
 }
 
-// ===== Webhook送信 =====
-const N8N_WEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL_HERE'; // ← n8nのWebhook URLに差し替えてください
+// ===== 診断結果の送信 =====
+// ▼▼▼ n8n の Webhook URL をここに設定してください ▼▼▼
+const N8N_WEBHOOK_URL = 'https://YOUR-N8N-WEBHOOK-URL-HERE';
+// ▲▲▲ ここまで ▲▲▲
 
+// ラベル変換マップ
+const FORM_LABEL = { ryokan:'旅館業（簡易宿所など）', minpaku:'住宅宿泊事業法（民泊新法）', undecided:'まだ決めていない・わからない' };
+const BASE_LABEL = { yes:'弊社にお任せ', no:'自分で用意する／もうある' };
+const PLANQ_LABEL = ['ゲスト対応','清掃のやりとり','口コミ対応'];
+const PLANQ_ANS = { yes:'自分でできる', no:'弊社に任せたい' };
+const LOC_LABEL = { in:'東京23区内', out:'東京23区外' };
+const OPT_ANS = { yes:'自分でできる（不要）', maybe:'わからない・不安', no:'弊社に任せたい' };
+
+// 診断の選択内容をテキスト化（メール本文用）
 function buildSummaryText(){
-  const ftLabel = formType==='ryokan'?'旅館業（簡易宿所など）':formType==='minpaku'?'住宅宿泊事業法（民泊新法）':'まだ決めていない・わからない';
-  let ciLabel = '（対象外）';
-  if(formType==='ryokan') ciLabel = baseNeeded==='yes'?'弊社にお任せ':'自分で用意する／もうある';
-  const gLabel = planAnswers[0]==='yes'?'自分でできる':'弊社に任せたい';
-  const cLabel = planAnswers[1]==='yes'?'自分でできる':'弊社に任せたい';
-  const rLabel = planAnswers[2]==='yes'?'自分でできる':'弊社に任せたい';
-  const locLabel = location23==='in'?'東京23区内':'東京23区外';
-  const valMap = {yes:'自分でできる（不要）',maybe:'わからない・不安',no:'弊社に任せたい'};
-  let optLines = '';
+  const L = [];
+  L.push('■ 営業形態');
+  L.push('　' + (FORM_LABEL[formType] || '未選択'));
+  if(formType==='ryokan'){
+    L.push('');
+    L.push('■ チェックインの自動化');
+    L.push('　' + (BASE_LABEL[baseNeeded] || '未選択'));
+  }
+  // 運営3問（opsBlockが表示されている＝回答した場合）
+  if(baseNeeded==='yes' || formType!=='ryokan'){
+    L.push('');
+    L.push('■ 運営の進め方');
+    planAnswers.forEach((a,i)=>{
+      L.push('　' + PLANQ_LABEL[i] + '：' + (PLANQ_ANS[a] || '未回答'));
+    });
+  }
+  L.push('');
+  L.push('■ 物件の所在地');
+  L.push('　' + (LOC_LABEL[location23] || '未選択'));
+  L.push('');
+  L.push('■ オプションの選択');
   OPTIONS.forEach(op=>{
     const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
-    if(card && card.style.display!=='none' && optAnswers[op.id]){
-      optLines += `\n　${op.name}：${valMap[optAnswers[op.id]]||optAnswers[op.id]}`;
+    const visible = card && getComputedStyle(card).display !== 'none';
+    const ans = optAnswers[op.id];
+    if(visible && ans){
+      L.push('　' + op.name + '：' + (OPT_ANS[ans] || ans));
     }
   });
-  return `■ 営業形態\n　${ftLabel}\n\n■ チェックインの自動化\n　${ciLabel}\n\n■ ゲスト対応\n　${gLabel}\n\n■ 清掃の手配\n　${cLabel}\n\n■ 口コミ対応\n　${rLabel}\n\n■ 物件所在地\n　${locLabel}\n\n■ オプション回答${optLines}`;
+  L.push('');
+  L.push('━━━━━━━━━━━━━━');
+  L.push('【診断結果】');
+  L.push('　おすすめプラン：' + (lastResult ? lastResult.planName : '―'));
+  if(lastResult){
+    if(lastResult.initialSum>0 || lastResult.monthlySum>0){
+      L.push('　初期費用（概算）：' + lastResult.initialSum.toLocaleString() + '円（税抜）');
+      if(lastResult.monthlySum>0){
+        L.push('　月額費用（概算）：' + lastResult.monthlySum.toLocaleString() + '円（税抜）');
+      }
+    }
+    if(lastResult.recommended.length>0){
+      L.push('　おすすめオプション：' + lastResult.recommended.join('、'));
+    }
+  }
+  L.push('━━━━━━━━━━━━━━');
+  return L.join('\n');
 }
 
+// 送信データ（JSON）を組み立て
 function buildPayload(lastName, firstName, email){
-  const ftLabel = formType==='ryokan'?'旅館業（簡易宿所など）':formType==='minpaku'?'住宅宿泊事業法（民泊新法）':'まだ決めていない・わからない';
-  let ciLabel = '（対象外）';
-  if(formType==='ryokan') ciLabel = baseNeeded==='yes'?'弊社にお任せ':'自分で用意する／もうある';
-  const gLabel = planAnswers[0]==='yes'?'自分でできる':'弊社に任せたい';
-  const cLabel = planAnswers[1]==='yes'?'自分でできる':'弊社に任せたい';
-  const rLabel = planAnswers[2]==='yes'?'自分でできる':'弊社に任せたい';
-  const locLabel = location23==='in'?'東京23区内':'東京23区外';
-  const valMap = {yes:'自分でできる（不要）',maybe:'わからない・不安',no:'弊社に任せたい'};
-  const optsObj = {};
-  OPTIONS.forEach(op=>{
-    const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
-    if(card && card.style.display!=='none' && optAnswers[op.id]){
-      optsObj[op.name] = valMap[optAnswers[op.id]]||optAnswers[op.id];
-    }
-  });
-  const allYes = planAnswers.every(a=>a==='yes');
-  const planKey = (baseNeeded==='no'&&allYes)?'none':allYes?'basic':'standard';
-  const planData = planKey!=='none'?PLAN[planKey]:null;
-  const recommended = OPTIONS.filter(op=>optAnswers[op.id]==='maybe'||optAnswers[op.id]==='no').map(op=>op.name);
   return {
     timestamp: new Date().toISOString(),
     contact: { lastName, firstName, email },
     diagnosis: {
-      formType: ftLabel,
-      checkinNeeded: ciLabel,
-      operationAnswers: { guest: gLabel, cleaning: cLabel, review: rLabel },
-      location: locLabel,
-      options: optsObj
+      formType: FORM_LABEL[formType] || '',
+      checkinNeeded: formType==='ryokan' ? (BASE_LABEL[baseNeeded]||'') : '（対象外）',
+      operationAnswers: {
+        guest: PLANQ_ANS[planAnswers[0]] || '',
+        cleaning: PLANQ_ANS[planAnswers[1]] || '',
+        review: PLANQ_ANS[planAnswers[2]] || ''
+      },
+      location: LOC_LABEL[location23] || '',
+      options: OPTIONS.reduce((acc,op)=>{
+        const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
+        const visible = card && getComputedStyle(card).display !== 'none';
+        if(visible && optAnswers[op.id]){
+          acc[op.name] = OPT_ANS[optAnswers[op.id]] || optAnswers[op.id];
+        }
+        return acc;
+      }, {})
     },
-    result: {
-      planName: planData?planData.name:'プランなし',
-      initialFee: planData?planData.initial:0,
-      monthlyFee: planData?planData.monthly:0,
-      recommendedOptions: recommended
-    },
+    result: lastResult ? {
+      planName: lastResult.planName,
+      initialFee: lastResult.initialSum,
+      monthlyFee: lastResult.monthlySum,
+      recommendedOptions: lastResult.recommended
+    } : null,
     summaryText: buildSummaryText()
   };
 }
 
+// バリデーション
+function validateForm(){
+  const lastName = document.getElementById('lastName').value.trim();
+  const firstName = document.getElementById('firstName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const errEl = document.getElementById('formError');
+  ['lastName','firstName','email'].forEach(id=>document.getElementById(id).classList.remove('err'));
+
+  if(!lastName){ document.getElementById('lastName').classList.add('err'); errEl.textContent='姓を入力してください。'; return null; }
+  if(!firstName){ document.getElementById('firstName').classList.add('err'); errEl.textContent='名を入力してください。'; return null; }
+  if(!email){ document.getElementById('email').classList.add('err'); errEl.textContent='メールアドレスを入力してください。'; return null; }
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if(!emailOk){ document.getElementById('email').classList.add('err'); errEl.textContent='メールアドレスの形式が正しくありません。'; return null; }
+  errEl.textContent='';
+  return { lastName, firstName, email };
+}
+
+// 送信ボタン
 document.getElementById('sendBtn').addEventListener('click', async ()=>{
-  const lastName  = document.getElementById('cfLastName').value.trim();
-  const firstName = document.getElementById('cfFirstName').value.trim();
-  const email     = document.getElementById('cfEmail').value.trim();
-  let valid = true;
-  ['cfLastName','cfFirstName','cfEmail'].forEach(id=>document.getElementById(id).classList.remove('error'));
-  if(!lastName){  document.getElementById('cfLastName').classList.add('error');  valid=false; }
-  if(!firstName){ document.getElementById('cfFirstName').classList.add('error'); valid=false; }
-  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){ document.getElementById('cfEmail').classList.add('error'); valid=false; }
+  const valid = validateForm();
   if(!valid) return;
   const btn = document.getElementById('sendBtn');
   const status = document.getElementById('sendStatus');
-  btn.disabled=true;
-  btn.textContent='送信中...';
-  status.className='send-status';
-  status.textContent='';
+  const payload = buildPayload(valid.lastName, valid.firstName, valid.email);
+
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  status.className = 'send-status';
+  status.textContent = '';
+
   try{
-    const res = await fetch(N8N_WEBHOOK_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(buildPayload(lastName,firstName,email))
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-    if(res.ok){
-      status.className='send-status ok';
-      status.textContent='✓ 送信が完了しました。担当者よりご連絡いたします。';
-      btn.textContent='送信済み';
-    }else{ throw new Error('server '+res.status); }
+    if(!res.ok) throw new Error('status ' + res.status);
+    status.className = 'send-status success';
+    status.textContent = '送信が完了しました。';
+    btn.textContent = '送信済み';
+    // 無料相談フォーム誘導セクションを表示
+    const postSend = document.getElementById('postSend');
+    if(postSend){
+      postSend.style.display = 'block';
+      setTimeout(()=>postSend.scrollIntoView({behavior:'smooth', block:'center'}), 200);
+    }
   }catch(e){
-    status.className='send-status err';
-    status.textContent='送信に失敗しました。お手数ですが、直接お問い合わせください。';
-    btn.disabled=false;
-    btn.innerHTML='診断結果を送信して無料相談を申し込む <i class="fa-solid fa-arrow-right" style="margin-left:8px;"></i>';
+    btn.disabled = false;
+    btn.textContent = '診断結果を送る';
+    status.className = 'send-status error';
+    status.textContent = '送信に失敗しました。お手数ですが時間をおいて再度お試しください。';
   }
 });
 </script>
