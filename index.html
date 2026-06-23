@@ -1022,7 +1022,7 @@ function buildResult(){
 }
 
 // ===== Webhook送信 =====
-const N8N_WEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL_HERE'; // ← n8nのWebhook URLに差し替えてください
+const N8N_WEBHOOK_URL = 'https://bizpato.app.n8n.cloud/webhook/minpaku-plan-check';
 
 function buildSummaryText(){
   const ftLabel = formType==='ryokan'?'旅館業（簡易宿所など）':formType==='minpaku'?'住宅宿泊事業法（民泊新法）':'まだ決めていない・わからない';
