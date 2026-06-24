@@ -551,8 +551,8 @@
     </div>
 
     <div class="cta-final">
-      <h3>診断結果を受け取る</h3>
-      <p>お名前と<strong>診断結果をお送りするメールアドレス</strong>をご入力ください。<br>結果はあなたと弊社担当者の双方にお送りし、その後の打ち合わせの参考にいたします。</p>
+      <h3>診断結果を送信する</h3>
+      <p>お名前と<strong>ご連絡先のメールアドレス</strong>をご入力ください。<br>診断結果は弊社担当者へ共有され、その後の打ち合わせの参考にいたします。</p>
       <div class="send-form">
         <div class="form-row">
           <div class="form-field">
@@ -569,12 +569,12 @@
           <input type="email" id="email" placeholder="example@email.com" autocomplete="email">
         </div>
         <div class="form-error" id="formError"></div>
-        <button class="send-btn" id="sendBtn">結果をメールで受け取る</button>
+        <button class="send-btn" id="sendBtn">診断結果を送信する</button>
         <div class="send-status" id="sendStatus"></div>
         <div class="post-send" id="postSend" style="display:none;">
           <div class="post-send-tag">CONFIRMED</div>
-          <h4><i class="fa-solid fa-circle-check" style="color:var(--green);margin-right:8px;"></i>診断結果をメールでお送りしました</h4>
-          <p>ご入力のメールアドレスにお送りしておりますので、ご確認ください。<br>診断結果は弊社担当者にも共有されました。<br>担当者よりあらためてご連絡させていただきます。</p>
+          <h4><i class="fa-solid fa-circle-check" style="color:var(--green);margin-right:8px;"></i>診断結果を担当者へ送信しました</h4>
+          <p>内容は弊社担当者へ共有されました。<br>担当者よりあらためてご連絡させていただきます。</p>
           <p style="font-size:13px;color:var(--mid);margin-top:14px;margin-bottom:0;">ご不明点は <a href="mailto:consulter@bizpato.com" style="color:var(--navy);font-weight:700;">consulter@bizpato.com</a> までお気軽にどうぞ。</p>
         </div>
       </div>
@@ -877,7 +877,7 @@ document.getElementById('retryBtn').addEventListener('click',()=>{
   ['lastName','firstName','email'].forEach(id=>{
     const el=document.getElementById(id); if(el){ el.value=''; el.classList.remove('err'); }
   });
-  const sb=document.getElementById('sendBtn'); if(sb){ sb.disabled=false; sb.textContent='結果をメールで受け取る'; }
+  const sb=document.getElementById('sendBtn'); if(sb){ sb.disabled=false; sb.textContent='診断結果を送信する'; }
   const ss=document.getElementById('sendStatus'); if(ss){ ss.className='send-status'; ss.textContent=''; }
   const fe=document.getElementById('formError'); if(fe){ fe.textContent=''; }
   const ps=document.getElementById('postSend'); if(ps){ ps.style.display='none'; }
@@ -1219,7 +1219,7 @@ document.getElementById('sendBtn').addEventListener('click', async ()=>{
     }
   }catch(e){
     btn.disabled = false;
-    btn.textContent = '診断結果を送る';
+    btn.textContent = '診断結果を送信する';
     status.className = 'send-status error';
     status.textContent = '送信に失敗しました。お手数ですが時間をおいて再度お試しください。';
   }
