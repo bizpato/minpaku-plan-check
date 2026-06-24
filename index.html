@@ -659,15 +659,11 @@ document.querySelectorAll('[data-form-q]').forEach(qEl=>{
       checkinBlock().querySelectorAll('.opt.sel').forEach(b=>b.classList.remove('sel'));
       opsBlock().querySelectorAll('.opt.sel').forEach(b=>b.classList.remove('sel'));
 
-      if(formType==='ryokan'){
-        // 旅館業：チェックイン要否を聞く → opsBlockは後で
+      if(formType==='ryokan' || formType==='minpaku' || formType==='undecided'){
+        // すべての営業形態でチェックイン質問を表示
+        // （チェックインシステム自体は営業形態に関わらず独立して選択可能）
         checkinBlock().style.display='block';
         opsBlock().style.display='none';
-      }else{
-        // 民泊新法・未定：管理業者契約のため基本以上必須 → 運営3問へ直行
-        checkinBlock().style.display='none';
-        baseNeeded='yes';  // 基本プラン以上が確定
-        opsBlock().style.display='block';
       }
       checkPlanDone();
     });
@@ -704,12 +700,11 @@ function checkPlanDone(){
   let done = false;
   if(formType===null){
     done = false;
-  }else if(formType==='ryokan' && baseNeeded===null){
-    // 旅館業でチェックイン要否未回答
+  }else if(baseNeeded===null){
+    // チェックイン要否が全営業形態で必須
     done = false;
   }else{
-    // チェックイン要否に関わらず、運営3問すべての回答が必要
-    // （チェックイン自前でも、運営を任せたいならスタンダードになるため）
+    // 運営3問すべての回答が必要
     done = planAnswers.every(a=>a!==null);
   }
   document.getElementById('toStep2').disabled = !done;
@@ -883,16 +878,26 @@ document.getElementById('retryBtn').addEventListener('click',()=>{
 function buildResult(){
   // プラン判定：基本不要 / 基本 / スタンダード の3パターン
   let planKey;  // 'none' | 'basic' | 'standard'
+  let planNote = ''; // 営業形態に応じた注記
   const allYes = planAnswers.every(a=>a==='yes');
-  if(baseNeeded==='no' && allYes){
-    // チェックイン自前 かつ 運営もすべて自分でできる → プランなし
-    planKey = 'none';
-  }else if(allYes){
-    // チェックインを弊社に任せる かつ 運営もすべて自分でできる → 基本プラン
-    planKey = 'basic';
-  }else{
+
+  if(!allYes){
     // 運営を1つでも任せたい → スタンダード（チェックインシステムも含まれる）
     planKey = 'standard';
+  }else if(formType==='ryokan' && baseNeeded==='no'){
+    // 旅館業 + チェックイン自前 + 運営すべて自分 → プランなし
+    planKey = 'none';
+  }else if(formType==='minpaku'){
+    // 民泊新法：管理業者契約必須のため基本プラン以上
+    planKey = 'basic';
+    planNote = '住宅宿泊事業法（民泊新法）では弊社との<strong>住宅宿泊管理業者契約</strong>が必要なため、基本プラン以上をご案内しています。';
+  }else if(formType==='undecided'){
+    // 未定：安全側で基本プラン
+    planKey = 'basic';
+    planNote = '営業形態が未確定のため、現時点では<strong>基本プラン</strong>でご案内しています。旅館業に確定し、チェックイン・運営ともにご自身で行う場合は、プラン契約なしも選択可能です。';
+  }else{
+    // 旅館業 + チェックインお任せ + 運営すべて自分 → 基本プラン
+    planKey = 'basic';
   }
 
   // 本人確認OP(op7)はプラン契約必須のため、プランなしで選ばれた場合は基本プランへ自動引き上げ
@@ -1038,6 +1043,10 @@ function buildResult(){
     if(monthlyOpts.some(op=>op.unit==='/室')){
       note += '<br>※ 本人確認は1室あたりの料金です（4名まで／5名以上は+1,000円/人）。別途タブレット端末費用が発生する場合があります。';
     }
+    // 営業形態に応じた注記（民泊新法・未定の場合）
+    if(planNote){
+      note += '<br>※ ' + planNote;
+    }
     // 本人確認OP選択によりプランなし→基本プランへ自動引き上げた場合の注記
     if(upgradedForOp7){
       note += '<br>※ <strong>本人確認オプションはプラン（基本・スタンダード）契約が必須</strong>のため、見積もりに基本プランの料金を含めています。あわせてチェックインシステム（SmartInn）とBeds24連携が必須となります。スタンダードプランへのアップグレードもご検討いただけます。';
@@ -1082,7 +1091,8 @@ function buildSummaryText(){
   const L = [];
   L.push('■ 営業形態');
   L.push('　' + (FORM_LABEL[formType] || '未選択'));
-  if(formType==='ryokan'){
+  // チェックインの自動化（全営業形態で回答していれば表示）
+  if(baseNeeded !== null){
     L.push('');
     L.push('■ チェックインの自動化');
     L.push('　' + (BASE_LABEL[baseNeeded] || '未選択'));
@@ -1138,7 +1148,7 @@ function buildPayload(lastName, firstName, email){
     contact: { lastName, firstName, email },
     diagnosis: {
       formType: FORM_LABEL[formType] || '',
-      checkinNeeded: formType==='ryokan' ? (BASE_LABEL[baseNeeded]||'') : '（対象外）',
+      checkinNeeded: baseNeeded !== null ? (BASE_LABEL[baseNeeded]||'') : '',
       operationAnswers: {
         guest: PLANQ_ANS[planAnswers[0]] || '',
         cleaning: PLANQ_ANS[planAnswers[1]] || '',
