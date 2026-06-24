@@ -1066,7 +1066,7 @@ function buildResult(){
 
 // ===== 診断結果の送信 =====
 // ▼▼▼ n8n の Webhook URL をここに設定してください ▼▼▼
-const N8N_WEBHOOK_URL = 'https://bizpato.app.n8n.cloud/webhook/minpaku-plan-check-new';
+const N8N_WEBHOOK_URL = 'https://YOUR-N8N-WEBHOOK-URL-HERE';
 // ▲▲▲ ここまで ▲▲▲
 
 // ラベル変換マップ
@@ -1087,8 +1087,8 @@ function buildSummaryText(){
     L.push('■ チェックインの自動化');
     L.push('　' + (BASE_LABEL[baseNeeded] || '未選択'));
   }
-  // 運営3問（opsBlockが表示されている＝回答した場合）
-  if(baseNeeded==='yes' || formType!=='ryokan'){
+  // 運営3問：回答があれば常に表示（旅館業×チェックイン自前でも運営3問は答えているため）
+  if(planAnswers.some(a => a !== null)){
     L.push('');
     L.push('■ 運営の進め方');
     planAnswers.forEach((a,i)=>{
@@ -1098,16 +1098,19 @@ function buildSummaryText(){
   L.push('');
   L.push('■ 物件の所在地');
   L.push('　' + (LOC_LABEL[location23] || '未選択'));
-  L.push('');
-  L.push('■ オプションの選択');
-  OPTIONS.forEach(op=>{
+  // オプション選択：回答済みのオプションがある場合のみ見出し+内容を出力
+  const answeredOps = OPTIONS.filter(op => {
     const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
     const visible = card && getComputedStyle(card).display !== 'none';
-    const ans = optAnswers[op.id];
-    if(visible && ans){
-      L.push('　' + op.name + '：' + (OPT_ANS[ans] || ans));
-    }
+    return visible && optAnswers[op.id];
   });
+  if(answeredOps.length > 0){
+    L.push('');
+    L.push('■ オプションの選択');
+    answeredOps.forEach(op => {
+      L.push('　' + op.name + '：' + (OPT_ANS[optAnswers[op.id]] || optAnswers[op.id]));
+    });
+  }
   L.push('');
   L.push('━━━━━━━━━━━━━━');
   L.push('【診断結果】');
