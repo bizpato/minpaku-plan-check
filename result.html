@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root{
     --navy:#1a2e4a;
@@ -342,6 +343,40 @@
   .post-send-btn:hover{transform:translateY(-2px);filter:brightness(1.08);}
   .post-send-btn i{margin-left:10px;font-size:13px;}
 
+  /* PDF保存カード */
+  .pdf-save-card{
+    position:relative;overflow:hidden;
+    background:linear-gradient(135deg, var(--navy) 0%, #2d4870 100%);
+    color:var(--white);border-radius:20px;
+    padding:32px;margin-bottom:22px;text-align:center;
+  }
+  .pdf-save-card .circle-deco{
+    position:absolute;width:240px;height:240px;border-radius:50%;
+    background:#fff;opacity:.05;top:-100px;right:-80px;
+  }
+  .pdf-save-card .pdf-icon{
+    position:relative;z-index:2;
+    font-size:36px;color:var(--yellow);margin-bottom:14px;
+  }
+  .pdf-save-card h3{
+    position:relative;z-index:2;
+    font-size:20px;font-weight:700;margin-bottom:10px;color:var(--white);
+  }
+  .pdf-save-card p{
+    position:relative;z-index:2;
+    font-size:14px;color:#c9d6e8;line-height:1.85;margin-bottom:24px;
+  }
+  .btn-pdf{
+    position:relative;z-index:2;
+    background:var(--red);color:var(--white);
+    font-size:16px;font-weight:700;padding:16px 40px;border-radius:99px;
+    border:none;cursor:pointer;font-family:inherit;
+    transition:transform .18s,filter .2s;letter-spacing:.03em;
+  }
+  .btn-pdf:hover{transform:translateY(-2px);filter:brightness(1.1);}
+  .btn-pdf:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .btn-pdf i{margin-right:8px;}
+
   .retry{text-align:center;margin-top:26px;}
   .retry button{
     background:none;border:none;color:var(--mid);font-size:14px;
@@ -548,6 +583,14 @@
       <div class="pb-tag">＋ さらに上のプランをお探しの方へ</div>
       <h4>プレミアムプラン（フルおまかせ）</h4>
       <p><strong>旅館業</strong>で、東京都23区内の同じ建物に<strong>3室以上</strong>をお持ちの方は、ゲスト対応から清掃・価格調整まですべておまかせいただける成果報酬型のプレミアムプランもご用意しています。詳しくは無料相談でご案内します。</p>
+    </div>
+
+    <div class="pdf-save-card">
+      <div class="circle-deco"></div>
+      <div class="pdf-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
+      <h3>診断結果をPDFで保存</h3>
+      <p>診断内容と概算お見積りをPDFファイルとしてダウンロードできます。<br>後で見返したり、社内での共有にお役立てください。</p>
+      <button class="btn-pdf" id="downloadPdfBtn"><i class="fa-solid fa-download"></i>PDFをダウンロード</button>
     </div>
 
     <div class="cta-final">
@@ -1232,6 +1275,142 @@ document.getElementById('sendBtn').addEventListener('click', async ()=>{
     btn.textContent = '診断結果を送信する';
     status.className = 'send-status error';
     status.textContent = '送信に失敗しました。お手数ですが時間をおいて再度お試しください。';
+  }
+});
+
+// ===== PDFダウンロード機能 =====
+function buildPDFContent(){
+  const lastName = document.getElementById('lastName').value.trim();
+  const firstName = document.getElementById('firstName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const customerName = (lastName || firstName) ? `${lastName} ${firstName} 様` : '（お客様情報未入力）';
+
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+
+  const formTypeLabel = FORM_LABEL[formType] || '未選択';
+  const baseLabel = baseNeeded !== null ? (BASE_LABEL[baseNeeded] || '未選択') : '';
+  const locationLabel = LOC_LABEL[location23] || '未選択';
+
+  // 運営3問
+  const opsRows = planAnswers.map((a, i) => {
+    const label = PLANQ_LABEL[i];
+    const ans = PLANQ_ANS[a] || '未回答';
+    return `<tr><td style="padding:7px 0;color:#6b7280;font-size:13px;width:40%;">${label}</td><td style="padding:7px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${ans}</td></tr>`;
+  }).join('');
+
+  // オプション選択
+  const optsRows = OPTIONS.map(op => {
+    const card = optContainer.querySelector(`[data-opt-id="${op.id}"]`);
+    const visible = card && getComputedStyle(card).display !== 'none';
+    const ans = optAnswers[op.id];
+    if(!visible || !ans) return '';
+    const ansLabel = OPT_ANS[ans] || ans;
+    const ansColor = ans === 'yes' ? '#3d9970' : (ans === 'maybe' ? '#c98a26' : '#ea4d3c');
+    return `<tr><td style="padding:7px 0;color:#1a2e4a;font-size:13px;">${op.name}</td><td style="padding:7px 0;color:${ansColor};font-weight:700;font-size:13px;text-align:right;">${ansLabel}</td></tr>`;
+  }).filter(s => s).join('');
+
+  // 診断結果
+  const planName = lastResult ? lastResult.planName : '―';
+  const initialFee = lastResult ? lastResult.initialSum : 0;
+  const monthlyFee = lastResult ? lastResult.monthlySum : 0;
+  const recommendedOpts = lastResult && lastResult.recommended.length > 0
+    ? lastResult.recommended.map(name => `<li style="margin:5px 0;color:#1a2e4a;font-size:13px;">${name}</li>`).join('')
+    : '<li style="color:#9ca3af;font-size:13px;">追加サポートなし</li>';
+
+  return `
+    <div style="font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;width:800px;padding:36px;box-sizing:border-box;background:#ffffff;color:#1a2e4a;line-height:1.6;">
+      <div style="background:linear-gradient(135deg, #1a2e4a 0%, #2d4870 100%);color:#ffffff;padding:28px 32px;border-radius:16px;margin-bottom:18px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:0.28em;color:#9ca3af;margin-bottom:6px;">B I Z P A T O　M I N P A K U　M A N A G E M E N T</div>
+        <div style="font-size:26px;font-weight:900;margin-bottom:6px;">民泊管理バンク｜診断結果</div>
+        <div style="font-size:12px;color:#c9d6e8;">作成日：${dateStr}</div>
+      </div>
+      <div style="background:#e0f2fe;border-radius:14px;padding:18px 24px;margin-bottom:18px;">
+        <div style="font-size:10px;font-weight:700;color:#1a2e4a;letter-spacing:0.16em;margin-bottom:6px;">CUSTOMER</div>
+        <div style="font-size:18px;font-weight:700;color:#1a2e4a;">${customerName}</div>
+        ${email ? `<div style="font-size:12px;color:#4b5563;margin-top:4px;">${email}</div>` : ''}
+      </div>
+      <div style="background:linear-gradient(135deg, #1a2e4a 0%, #24405f 100%);color:#ffffff;border-radius:14px;padding:26px 28px;margin-bottom:18px;text-align:center;">
+        <div style="font-size:11px;color:#d7f0ff;letter-spacing:0.16em;margin-bottom:8px;">あなたへのおすすめプラン</div>
+        <div style="font-size:30px;font-weight:900;line-height:1.2;">${planName}</div>
+        ${monthlyFee > 0 ? `<div style="font-size:14px;color:#c9d6e8;margin-top:8px;">月額 ${monthlyFee.toLocaleString()}円 / 物件（税抜）</div>` : ''}
+      </div>
+      <div style="background:#e0f2fe;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 概算お見積り</div>
+        <table style="width:100%;border-collapse:collapse;">
+          ${initialFee > 0 ? `<tr><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">初期費用 合計</td><td style="padding:8px 0;font-size:18px;font-weight:900;color:#ea4d3c;text-align:right;">${initialFee.toLocaleString()}円</td></tr>` : ''}
+          ${monthlyFee > 0 ? `<tr style="border-top:1px solid #c5dbf0;"><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">月額費用 合計</td><td style="padding:8px 0;font-size:18px;font-weight:900;color:#ea4d3c;text-align:right;">${monthlyFee.toLocaleString()}円</td></tr>` : ''}
+        </table>
+        <div style="font-size:11px;color:#6b7280;margin-top:10px;line-height:1.7;">※ 1物件あたりの概算（税抜）です。正式なお見積りは打ち合わせ後に確定いたします。<br>※ 別途、Beds24・PriceLabs等の実費がホスト様負担となる場合があります。</div>
+      </div>
+      <div style="background:#ffffff;border:2px solid #e5e7eb;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ おすすめサポート</div>
+        <ul style="margin:0;padding-left:22px;">${recommendedOpts}</ul>
+      </div>
+      <div style="background:#f8f9fb;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 診断回答内容</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="padding:7px 0;color:#6b7280;font-size:13px;width:40%;">営業形態</td><td style="padding:7px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${formTypeLabel}</td></tr>
+          ${baseLabel ? `<tr><td style="padding:7px 0;color:#6b7280;font-size:13px;">チェックインの自動化</td><td style="padding:7px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${baseLabel}</td></tr>` : ''}
+          ${opsRows}
+          <tr><td style="padding:7px 0;color:#6b7280;font-size:13px;">物件の所在地</td><td style="padding:7px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${locationLabel}</td></tr>
+        </table>
+        ${optsRows ? `<div style="border-top:1px dashed #d5dce5;padding-top:14px;margin-top:14px;">
+          <div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:8px;letter-spacing:0.04em;">オプション別の選択</div>
+          <table style="width:100%;border-collapse:collapse;">${optsRows}</table>
+        </div>` : ''}
+      </div>
+      <div style="border-top:2px solid #e5e7eb;padding-top:18px;margin-top:24px;text-align:center;">
+        <div style="font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:14px;">
+          ※ 本診断の結果・概算金額はあくまで目安です。正式なプラン・お見積りは、物件の状況や受託可否の確認のうえ、確定いたします。
+        </div>
+        <div style="background:#f8f9fb;border-radius:10px;padding:12px;font-size:11px;color:#1a2e4a;line-height:1.7;">
+          <strong style="font-size:13px;">株式会社BizPato｜民泊管理バンク</strong><br>
+          お問い合わせ：consulter@bizpato.com
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('downloadPdfBtn');
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>PDF生成中…';
+
+  try{
+    const pdfHtml = buildPDFContent();
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = pdfHtml;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    document.body.appendChild(tempDiv);
+
+    const lastName = document.getElementById('lastName').value.trim() || 'お客様';
+    const firstName = document.getElementById('firstName').value.trim() || '';
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+    const filename = `民泊管理バンク_診断結果_${lastName}${firstName}_${dateStr}.pdf`;
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    await html2pdf().set(opt).from(tempDiv.firstChild).save();
+    document.body.removeChild(tempDiv);
+  }catch(e){
+    console.error('PDF generation failed:', e);
+    alert('PDFの生成に失敗しました。お手数ですが再度お試しください。');
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = originalText;
   }
 });
 </script>
