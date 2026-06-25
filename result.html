@@ -249,7 +249,7 @@
 
   .premium-banner{
     position:relative;overflow:hidden;
-    background:var(--white);color:var(--navy);
+    background:#fffae6;color:var(--navy);
     border:2px solid var(--navy);
     border-radius:20px;padding:32px;margin-bottom:22px;
   }
@@ -598,16 +598,16 @@
       </div>
     </div>
 
+    <div class="pdf-save-card" id="pdfSaveCard" style="display:none;">
+      <button class="btn-pdf" id="downloadPdfBtn"><i class="fa-solid fa-download"></i>診断結果をPDFで保存する</button>
+      <p class="pdf-note">送信内容の控えとしていつでもダウンロードできます</p>
+    </div>
+
     <div class="premium-banner" id="premiumBanner">
       <div class="circle-deco"></div>
       <div class="pb-tag">＋ さらに上のプランをお探しの方へ</div>
       <h4>プレミアムプラン（フルおまかせ）</h4>
       <p><strong>旅館業</strong>で、東京都23区内の同じ建物に<strong>3室以上</strong>をお持ちの方は、ゲスト対応から清掃・価格調整まですべておまかせいただける成果報酬型のプレミアムプランもご用意しています。詳しくは無料相談でご案内します。</p>
-    </div>
-
-    <div class="pdf-save-card" id="pdfSaveCard" style="display:none;">
-      <button class="btn-pdf" id="downloadPdfBtn"><i class="fa-solid fa-download"></i>診断結果をPDFで保存する</button>
-      <p class="pdf-note">送信内容の控えとしていつでもダウンロードできます</p>
     </div>
 
     <div class="retry">
@@ -1373,68 +1373,90 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>PDF生成中…';
 
   let tempDiv = null;
-  try{
-    // html2pdfライブラリが読み込まれているか確認
-    if(typeof html2pdf === 'undefined'){
-      throw new Error('html2pdfライブラリが読み込まれていません');
-    }
+  let overlay = null;
 
+  try{
+    if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
+      throw new Error('PDF生成ライブラリが読み込まれていません');
+    }
+    const { jsPDF } = window.jspdf;
+
+    // 全画面オーバーレイで作業中の要素を隠す
+    overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.96);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:"Noto Sans JP",sans-serif;';
+    overlay.innerHTML = '<div style="text-align:center;color:#1a2e4a;"><div style="width:50px;height:50px;border:4px solid #e0f2fe;border-top-color:#1a2e4a;border-radius:50%;animation:pdfspin 1s linear infinite;margin:0 auto 16px;"></div><p style="font-weight:700;font-size:16px;margin:0;">PDF生成中…</p></div><style>@keyframes pdfspin{to{transform:rotate(360deg);}}</style>';
+    document.body.appendChild(overlay);
+
+    // PDF対象の要素を画面に配置（オーバーレイの下に隠れる）
     const pdfHtml = buildPDFContent();
     tempDiv = document.createElement('div');
     tempDiv.innerHTML = pdfHtml.trim();
-    // 画面外ではなく、画面内の見えない位置に配置（html2canvas互換のため）
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '0';
-    tempDiv.style.top = '0';
-    tempDiv.style.width = '800px';
-    tempDiv.style.opacity = '0';
-    tempDiv.style.pointerEvents = 'none';
-    tempDiv.style.zIndex = '-1';
+    tempDiv.style.cssText = 'position:fixed;top:0;left:0;width:800px;background:#ffffff;z-index:1;';
     document.body.appendChild(tempDiv);
 
-    // 実際のPDF対象要素を取得
     const pdfElement = tempDiv.firstElementChild;
     if(!pdfElement){
       throw new Error('PDF対象の要素が見つかりません');
     }
 
-    // Webフォント（Noto Sans JP）の読み込み完了を待つ
+    // フォント読み込み待機 + レンダリング待機
     if(document.fonts && document.fonts.ready){
       await document.fonts.ready;
     }
-    // 念のため短い待機（レンダリング安定化）
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(r => setTimeout(r, 300));
+
+    // html2canvasで画像化
+    const canvas = await html2canvas(pdfElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: pdfElement.offsetWidth,
+      height: pdfElement.offsetHeight,
+      windowWidth: 800,
+      windowHeight: pdfElement.offsetHeight
+    });
+
+    if(canvas.width === 0 || canvas.height === 0){
+      throw new Error('描画失敗 (サイズ:' + canvas.width + 'x' + canvas.height + ')');
+    }
+
+    // jsPDFでA4 PDFを生成
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const imgWidth = pdfWidth - (margin * 2);
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+    // ページ分割
+    let heightLeft = imgHeight;
+    let position = margin;
+    pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+    heightLeft -= (pdfHeight - margin * 2);
+
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight + margin;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+      heightLeft -= (pdfHeight - margin * 2);
+    }
 
     const lastName = document.getElementById('lastName').value.trim() || 'お客様';
     const firstName = document.getElementById('firstName').value.trim() || '';
     const today = new Date();
     const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
     const filename = `民泊管理バンク_診断結果_${lastName}${firstName}_${dateStr}.pdf`;
-
-    const opt = {
-      margin: [10, 10, 10, 10],
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: 800,
-        windowWidth: 800
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    await html2pdf().set(opt).from(pdfElement).save();
+    pdf.save(filename);
   }catch(e){
     console.error('PDF generation failed:', e);
     alert('PDFの生成に失敗しました。\nエラー内容: ' + (e.message || e));
   }finally{
-    if(tempDiv && tempDiv.parentNode){
-      tempDiv.parentNode.removeChild(tempDiv);
-    }
+    if(tempDiv && tempDiv.parentNode){ tempDiv.parentNode.removeChild(tempDiv); }
+    if(overlay && overlay.parentNode){ overlay.parentNode.removeChild(overlay); }
     btn.disabled = false;
     btn.innerHTML = originalText;
   }
