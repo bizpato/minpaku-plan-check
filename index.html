@@ -1367,60 +1367,79 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
 
   let tempDiv = null;
   try{
-    // html2pdfライブラリが読み込まれているか確認
-    if(typeof html2pdf === 'undefined'){
-      throw new Error('html2pdfライブラリが読み込まれていません');
+    // 必要なライブラリが読み込まれているか確認
+    if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
+      throw new Error('PDF生成ライブラリが読み込まれていません');
     }
+    const { jsPDF } = window.jspdf;
 
     const pdfHtml = buildPDFContent();
     tempDiv = document.createElement('div');
     tempDiv.innerHTML = pdfHtml.trim();
-    // 画面外ではなく、画面内の見えない位置に配置（html2canvas互換のため）
-    tempDiv.style.position = 'absolute';
+    // 画面の下の見えない位置に配置（描画は確実、ユーザーには見えない）
+    tempDiv.style.position = 'fixed';
     tempDiv.style.left = '0';
-    tempDiv.style.top = '0';
+    tempDiv.style.top = '100vh';
     tempDiv.style.width = '800px';
-    tempDiv.style.opacity = '0';
-    tempDiv.style.pointerEvents = 'none';
+    tempDiv.style.background = '#ffffff';
     tempDiv.style.zIndex = '-1';
     document.body.appendChild(tempDiv);
 
-    // 実際のPDF対象要素を取得
     const pdfElement = tempDiv.firstElementChild;
     if(!pdfElement){
       throw new Error('PDF対象の要素が見つかりません');
     }
 
-    // Webフォント（Noto Sans JP）の読み込み完了を待つ
+    // Webフォント読み込み待機
     if(document.fonts && document.fonts.ready){
       await document.fonts.ready;
     }
-    // 念のため短い待機（レンダリング安定化）
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
+    // html2canvasで要素を画像化
+    const canvas = await html2canvas(pdfElement, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: 800,
+      windowWidth: 800
+    });
+
+    if(canvas.width === 0 || canvas.height === 0){
+      throw new Error('キャプチャに失敗しました（サイズ:' + canvas.width + 'x' + canvas.height + '）');
+    }
+
+    // jsPDFでA4サイズのPDFを生成
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();   // 210mm
+    const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+    const margin = 10;
+    const imgWidth = pdfWidth - (margin * 2);
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+    // 長い場合はページ分割
+    let heightLeft = imgHeight;
+    let position = margin;
+    pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+    heightLeft -= (pdfHeight - margin * 2);
+
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight + margin;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+      heightLeft -= (pdfHeight - margin * 2);
+    }
+
+    // ファイル名生成と保存
     const lastName = document.getElementById('lastName').value.trim() || 'お客様';
     const firstName = document.getElementById('firstName').value.trim() || '';
     const today = new Date();
     const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
     const filename = `民泊管理バンク_診断結果_${lastName}${firstName}_${dateStr}.pdf`;
-
-    const opt = {
-      margin: [10, 10, 10, 10],
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: 800,
-        windowWidth: 800
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    await html2pdf().set(opt).from(pdfElement).save();
+    pdf.save(filename);
   }catch(e){
     console.error('PDF generation failed:', e);
     alert('PDFの生成に失敗しました。\nエラー内容: ' + (e.message || e));
