@@ -249,19 +249,20 @@
 
   .premium-banner{
     position:relative;overflow:hidden;
-    background:var(--navy);color:var(--white);
+    background:var(--white);color:var(--navy);
+    border:2px solid var(--navy);
     border-radius:20px;padding:32px;margin-bottom:22px;
   }
   .premium-banner .circle-deco{
     position:absolute;width:240px;height:240px;border-radius:50%;
-    background:#fff;opacity:.05;bottom:-130px;right:-80px;
+    background:var(--navy);opacity:.04;bottom:-130px;right:-80px;
   }
   .premium-banner .pb-tag{
     position:relative;z-index:2;
-    font-size:12px;letter-spacing:.12em;color:var(--yellow);font-weight:700;margin-bottom:12px;
+    font-size:12px;letter-spacing:.12em;color:var(--red);font-weight:700;margin-bottom:12px;
   }
-  .premium-banner h4{position:relative;z-index:2;font-size:20px;font-weight:700;margin-bottom:12px;}
-  .premium-banner p{position:relative;z-index:2;font-size:15px;color:#c9d6e8;line-height:1.85;}
+  .premium-banner h4{position:relative;z-index:2;font-size:20px;font-weight:700;margin-bottom:12px;color:var(--navy);}
+  .premium-banner p{position:relative;z-index:2;font-size:15px;color:var(--text);line-height:1.85;}
 
   .cta-final{
     background:var(--white);border:1px solid var(--line);border-radius:24px;
@@ -578,14 +579,6 @@
       <p><strong>旅館業</strong>で、東京都23区内の同じ建物に<strong>3室以上</strong>をお持ちの方は、ゲスト対応から清掃・価格調整まですべておまかせいただける成果報酬型のプレミアムプランもご用意しています。詳しくは無料相談でご案内します。</p>
     </div>
 
-    <div class="pdf-save-card">
-      <div class="circle-deco"></div>
-      <div class="pdf-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
-      <h3>診断結果をPDFで保存</h3>
-      <p>診断内容と概算お見積りをPDFファイルとしてダウンロードできます。<br>後で見返したり、社内での共有にお役立てください。</p>
-      <button class="btn-pdf" id="downloadPdfBtn"><i class="fa-solid fa-download"></i>PDFをダウンロード</button>
-    </div>
-
     <div class="cta-final">
       <h3>診断結果を送る</h3>
       <p>お名前とメールアドレスをご入力のうえ送信ください。<br>送信後、<strong>無料相談フォーム</strong>へご案内します。診断結果をもとに専門スタッフが正式なお見積りと受託可否をご回答します。</p>
@@ -614,6 +607,14 @@
           <a href="https://bizpato.com/minpaku/minpaku-lp/lp-order/#form" target="_blank" rel="noopener" class="post-send-btn">無料相談フォームへ <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
+    </div>
+
+    <div class="pdf-save-card" id="pdfSaveCard" style="display:none;">
+      <div class="circle-deco"></div>
+      <div class="pdf-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
+      <h3>診断結果をPDFでも保存できます</h3>
+      <p>送信内容の控えとして、PDFファイルでもご保存いただけます。<br>後で見返したり、社内での共有にお役立てください。</p>
+      <button class="btn-pdf" id="downloadPdfBtn"><i class="fa-solid fa-download"></i>PDFをダウンロード</button>
     </div>
 
     <div class="retry">
@@ -912,6 +913,7 @@ document.getElementById('retryBtn').addEventListener('click',()=>{
   const ss=document.getElementById('sendStatus'); if(ss){ ss.className='send-status'; ss.textContent=''; }
   const fe=document.getElementById('formError'); if(fe){ fe.textContent=''; }
   const ps=document.getElementById('postSend'); if(ps){ ps.style.display='none'; }
+  const pc=document.getElementById('pdfSaveCard'); if(pc){ pc.style.display='none'; }
   document.getElementById('toStep2').disabled=true;
   document.getElementById('toResult').disabled=true;
   showStep('step1',1);
@@ -1263,6 +1265,11 @@ document.getElementById('sendBtn').addEventListener('click', async ()=>{
       postSend.style.display = 'block';
       setTimeout(()=>postSend.scrollIntoView({behavior:'smooth', block:'center'}), 200);
     }
+    // PDFダウンロードカードを表示
+    const pdfSaveCard = document.getElementById('pdfSaveCard');
+    if(pdfSaveCard){
+      pdfSaveCard.style.display = 'block';
+    }
   }catch(e){
     btn.disabled = false;
     btn.textContent = '診断結果を送る';
@@ -1372,14 +1379,26 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>PDF生成中…';
 
+  let tempDiv = null;
   try{
+    // html2pdfライブラリが読み込まれているか確認
+    if(typeof html2pdf === 'undefined'){
+      throw new Error('html2pdfライブラリが読み込まれていません');
+    }
+
     const pdfHtml = buildPDFContent();
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = pdfHtml;
+    tempDiv = document.createElement('div');
+    tempDiv.innerHTML = pdfHtml.trim();
     tempDiv.style.position = 'absolute';
     tempDiv.style.left = '-9999px';
     tempDiv.style.top = '0';
     document.body.appendChild(tempDiv);
+
+    // 実際のPDF対象要素を取得（テキストノードではなく要素ノード）
+    const pdfElement = tempDiv.firstElementChild;
+    if(!pdfElement){
+      throw new Error('PDF対象の要素が見つかりません');
+    }
 
     const lastName = document.getElementById('lastName').value.trim() || 'お客様';
     const firstName = document.getElementById('firstName').value.trim() || '';
@@ -1396,12 +1415,14 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    await html2pdf().set(opt).from(tempDiv.firstChild).save();
-    document.body.removeChild(tempDiv);
+    await html2pdf().set(opt).from(pdfElement).save();
   }catch(e){
     console.error('PDF generation failed:', e);
-    alert('PDFの生成に失敗しました。お手数ですが再度お試しください。');
+    alert('PDFの生成に失敗しました。\nエラー内容: ' + (e.message || e));
   }finally{
+    if(tempDiv && tempDiv.parentNode){
+      tempDiv.parentNode.removeChild(tempDiv);
+    }
     btn.disabled = false;
     btn.innerHTML = originalText;
   }
