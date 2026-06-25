@@ -1,624 +1,3 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>民泊管理バンク｜かんたんプラン診断</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<style>
-  :root{
-    --navy:#1a2e4a;
-    --red:#ea4d3c;
-    --sky:#d7f0ff;
-    --sky-light:#e0f2fe;
-    --yellow:#fff050;
-    --bg:#f8f9fb;
-    --white:#ffffff;
-    --text:#4b5563;
-    --mid:#6b7280;
-    --light:#9ca3af;
-    --line:#e5e7eb;
-    --green:#3d9970;
-    --amber:#c98a26;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.9;
-    font-weight:400;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:760px;margin:0 auto;padding:0 28px;position:relative;z-index:10;}
-
-  /* ===== Header ===== */
-  header{
-    position:relative;
-    background:var(--bg);
-    padding:60px 0 30px;
-    text-align:center;
-    overflow:hidden;
-  }
-  header .circle-deco{
-    position:absolute;width:500px;height:500px;border-radius:50%;
-    background:var(--sky);opacity:.35;top:-230px;right:-160px;z-index:1;
-  }
-  header .circle-deco.small{
-    width:200px;height:200px;top:auto;bottom:-120px;left:-90px;right:auto;opacity:.28;
-  }
-  header .eyebrow{
-    position:relative;z-index:10;
-    font-size:13px;letter-spacing:.28em;color:var(--light);
-    font-weight:400;margin-bottom:20px;
-  }
-  header h1{
-    position:relative;z-index:10;
-    font-size:38px;font-weight:900;line-height:1.35;letter-spacing:.01em;
-    color:var(--navy);
-  }
-  header .divider{
-    width:48px;height:2px;background:var(--light);margin:22px auto 20px;
-    position:relative;z-index:10;
-  }
-  header p.lead{
-    position:relative;z-index:10;
-    font-size:17px;color:var(--text);font-weight:400;line-height:1.85;
-  }
-
-  /* ===== Progress ===== */
-  .progress{
-    position:sticky;top:0;z-index:30;
-    background:rgba(248,249,251,.92);
-    backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--line);
-    padding:16px 0;
-  }
-  .progress .bar-track{height:5px;background:var(--line);border-radius:99px;overflow:hidden;}
-  .progress .bar-fill{
-    height:100%;width:0%;background:var(--navy);border-radius:99px;
-    transition:width .5s cubic-bezier(.4,0,.2,1);
-  }
-  .progress .labels{
-    display:flex;justify-content:space-between;margin-top:10px;
-    font-size:12px;color:var(--light);font-weight:400;letter-spacing:.04em;
-  }
-  .progress .labels span.on{color:var(--navy);font-weight:700;}
-
-  /* ===== Steps ===== */
-  main{padding:40px 0 80px;}
-  .step{display:none;}
-  .step.active{display:block;animation:fade .5s ease;}
-  @keyframes fade{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
-
-  .step-head{margin-bottom:14px;text-align:center;}
-  .step-tag{
-    display:inline-block;color:var(--mid);
-    font-size:13px;font-weight:700;letter-spacing:.16em;margin-bottom:18px;
-  }
-  .step-icon{
-    width:80px;height:80px;border-radius:50%;background:var(--sky-light);
-    display:flex;align-items:center;justify-content:center;
-    font-size:34px;color:var(--navy);margin:0 auto 22px;
-  }
-  .step-title{
-    font-size:30px;font-weight:700;margin-bottom:14px;line-height:1.4;color:var(--navy);
-  }
-  .step-sub{font-size:16px;color:var(--mid);margin-bottom:40px;line-height:1.85;}
-
-  /* ===== Question card ===== */
-  .q{
-    background:var(--white);border:1px solid var(--line);border-radius:20px;
-    padding:38px 34px;margin-bottom:24px;
-  }
-  .q-num{
-    font-size:13px;font-weight:700;color:var(--mid);letter-spacing:.1em;
-    margin-bottom:14px;
-  }
-  .q-num .cat-pill{
-    display:inline-block;background:var(--sky-light);color:var(--navy);
-    padding:3px 12px;border-radius:99px;margin-left:8px;font-size:12px;letter-spacing:.04em;
-  }
-  .q-num .region-pill{
-    display:inline-block;background:#fdeceb;color:var(--red);
-    padding:3px 12px;border-radius:99px;margin-left:8px;font-size:12px;font-weight:700;letter-spacing:.02em;
-  }
-  .q-title{font-size:22px;font-weight:700;line-height:1.55;margin-bottom:16px;color:var(--navy);}
-  .q-desc{font-size:16px;color:var(--text);margin-bottom:14px;line-height:1.9;}
-  .q-desc strong{color:var(--navy);font-weight:700;}
-  .q-note{
-    font-size:14px;color:var(--mid);background:var(--bg);
-    border-radius:12px;padding:14px 18px;margin-bottom:26px;
-    border-left:3px solid var(--sky);line-height:1.8;
-  }
-  .q-note strong{color:var(--navy);font-weight:700;}
-
-  .ops-intro{
-    display:flex;align-items:center;gap:16px;margin:34px 0 24px;
-  }
-  .ops-intro .ops-intro-line{flex:1;height:1px;background:var(--line);}
-  .ops-intro span{font-size:14px;color:var(--mid);font-weight:700;letter-spacing:.04em;white-space:nowrap;}
-  .opts{display:flex;flex-direction:column;gap:13px;}
-  .opt{
-    display:flex;align-items:center;gap:16px;
-    border:2px solid var(--line);border-radius:14px;
-    padding:18px 20px;cursor:pointer;background:var(--white);
-    transition:all .2s ease;text-align:left;width:100%;font-family:inherit;
-  }
-  .opt:hover{border-color:#c5d2e0;background:#fcfdff;}
-  .opt .ic{
-    flex-shrink:0;width:26px;height:26px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:13px;color:var(--white);
-    border:2px solid var(--line);background:var(--white);
-    transition:all .2s ease;
-  }
-  /* 中立アイコン（営業形態・立地）：ラジオボタン風。選択時にネイビーで塗る */
-  .opt .ic.neutral .fa-solid{opacity:0;transition:opacity .15s;}
-  .opt.sel .ic.neutral{background:var(--navy);border-color:var(--navy);}
-  .opt.sel .ic.neutral .fa-solid{opacity:1;}
-  /* 色付きアイコン：選択前から枠＋アイコンに色、選択時に塗りつぶす */
-  .opt .ic.yes{border-color:var(--green);color:var(--green);}
-  .opt.sel .ic.yes{background:var(--green);border-color:var(--green);color:var(--white);}
-  .opt .ic.maybe{border-color:var(--amber);color:var(--amber);}
-  .opt.sel .ic.maybe{background:var(--amber);border-color:var(--amber);color:var(--white);}
-  .opt .ic.no{border-color:var(--red);color:var(--red);}
-  .opt.sel .ic.no{background:var(--red);border-color:var(--red);color:var(--white);}
-  .opt .txt{flex:1;font-size:16px;font-weight:400;line-height:1.55;color:var(--navy);}
-  .opt .txt small{display:block;font-size:13px;color:var(--mid);font-weight:400;margin-top:3px;}
-  .opt.sel{border-color:var(--navy);background:var(--sky-light);}
-  .opt-price{
-    font-size:14px;color:var(--mid);text-align:right;margin-top:16px;
-  }
-  .opt-price strong{color:var(--navy);font-weight:700;}
-
-  /* ===== Nav ===== */
-  .nav{display:flex;gap:14px;margin-top:34px;}
-  .btn{
-    flex:1;padding:18px;border-radius:14px;font-size:16px;font-weight:700;
-    cursor:pointer;border:none;font-family:inherit;transition:all .2s;letter-spacing:.02em;
-  }
-  .btn-primary{background:var(--navy);color:var(--white);}
-  .btn-primary:hover{background:#24405f;}
-  .btn-primary:disabled{background:#aeb9c7;cursor:not-allowed;}
-  .btn-ghost{background:var(--white);color:var(--navy);border:2px solid var(--line);flex:0 0 120px;}
-  .btn-ghost:hover{border-color:#c5d2e0;}
-
-  /* ===== Result ===== */
-  .result-hero{
-    position:relative;overflow:hidden;
-    background:var(--navy);color:var(--white);border-radius:24px;
-    padding:48px 36px;text-align:center;margin-bottom:24px;
-  }
-  .result-hero .circle-deco{
-    position:absolute;width:340px;height:340px;border-radius:50%;
-    background:#ffffff;opacity:.06;top:-150px;right:-120px;
-  }
-  .result-hero .label{position:relative;z-index:2;font-size:14px;color:var(--sky);letter-spacing:.16em;margin-bottom:14px;}
-  .result-hero .plan-name{position:relative;z-index:2;font-size:42px;font-weight:900;letter-spacing:.01em;line-height:1.2;}
-  .result-hero .plan-price{position:relative;z-index:2;font-size:18px;color:#c9d6e8;margin-top:10px;font-weight:400;}
-  .result-hero .plan-tag{
-    position:relative;z-index:2;
-    display:inline-block;margin-top:20px;background:var(--red);
-    font-size:13px;font-weight:700;padding:8px 20px;border-radius:99px;letter-spacing:.02em;
-  }
-
-  .card{
-    background:var(--white);border:1px solid var(--line);border-radius:20px;
-    padding:32px;margin-bottom:22px;
-  }
-  .card h3{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--navy);display:flex;align-items:center;gap:12px;}
-  .card h3 .h-ic{
-    width:42px;height:42px;border-radius:50%;background:var(--sky-light);
-    display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--navy);flex-shrink:0;
-  }
-  .card .h-sub{font-size:14px;color:var(--mid);margin-bottom:18px;padding-left:54px;}
-
-  .inc-row{
-    display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
-    padding:15px 0;border-bottom:1px solid var(--line);font-size:16px;
-  }
-  .inc-row:last-child{border-bottom:none;}
-  .inc-row .name{font-weight:400;color:var(--navy);}
-  .inc-row .name small{display:block;font-size:13px;color:var(--mid);font-weight:400;margin-top:2px;}
-  .inc-row .val{color:var(--navy);font-weight:700;white-space:nowrap;}
-  .inc-row .free{color:var(--green);font-weight:700;font-size:14px;white-space:nowrap;}
-
-  .estimate{
-    background:var(--sky-light);border-radius:20px;
-    padding:32px;margin-bottom:22px;
-  }
-  .estimate h3{font-size:18px;font-weight:700;margin-bottom:20px;color:var(--navy);display:flex;align-items:center;gap:12px;}
-  .estimate h3 .h-ic{
-    width:42px;height:42px;border-radius:50%;background:var(--white);
-    display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--navy);flex-shrink:0;
-  }
-  .est-line{display:flex;justify-content:space-between;padding:10px 0;font-size:16px;color:var(--navy);}
-  .est-line.total{
-    border-top:2px solid var(--navy);margin-top:10px;padding-top:16px;
-    font-size:19px;font-weight:700;
-  }
-  .est-line.total .amt{color:var(--red);font-weight:900;}
-  .est-line .amt-m{color:var(--red);font-weight:900;}
-  .est-note{font-size:13px;color:var(--mid);margin-top:18px;line-height:1.8;}
-
-  .premium-banner{
-    position:relative;overflow:hidden;
-    background:var(--white);color:var(--navy);
-    border:2px solid var(--navy);
-    border-radius:20px;padding:32px;margin-bottom:22px;
-  }
-  .premium-banner .circle-deco{
-    position:absolute;width:240px;height:240px;border-radius:50%;
-    background:var(--navy);opacity:.04;bottom:-130px;right:-80px;
-  }
-  .premium-banner .pb-tag{
-    position:relative;z-index:2;
-    font-size:12px;letter-spacing:.12em;color:var(--red);font-weight:700;margin-bottom:12px;
-  }
-  .premium-banner h4{position:relative;z-index:2;font-size:20px;font-weight:700;margin-bottom:12px;color:var(--navy);}
-  .premium-banner p{position:relative;z-index:2;font-size:15px;color:var(--text);line-height:1.85;}
-
-  .cta-final{
-    background:var(--white);border:1px solid var(--line);border-radius:24px;
-    padding:44px 32px;text-align:center;
-  }
-  .cta-final h3{font-size:24px;font-weight:700;margin-bottom:12px;color:var(--navy);}
-  .cta-final p{font-size:15px;color:var(--mid);margin-bottom:28px;line-height:1.85;}
-  .cta-final a{
-    display:inline-block;background:var(--red);color:var(--white);
-    font-size:17px;font-weight:700;padding:18px 52px;border-radius:99px;
-    text-decoration:none;transition:transform .18s;letter-spacing:.03em;
-  }
-  .cta-final a:hover{transform:translateY(-2px);}
-
-  /* 送信フォーム */
-  .send-form{text-align:left;max-width:420px;margin:0 auto;}
-  .form-row{display:flex;gap:14px;}
-  .form-field{flex:1;margin-bottom:18px;}
-  .form-field label{
-    display:block;font-size:14px;font-weight:700;color:var(--navy);
-    margin-bottom:8px;letter-spacing:.02em;
-  }
-  .form-field .req{
-    display:inline-block;background:#fdeceb;color:var(--red);
-    font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px;
-  }
-  .form-field input{
-    width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:12px;
-    font-size:16px;font-family:inherit;color:var(--navy);background:var(--bg);
-    transition:border-color .2s;box-sizing:border-box;
-  }
-  .form-field input:focus{outline:none;border-color:var(--navy);background:var(--white);}
-  .form-field input.err{border-color:var(--red);}
-  .form-error{
-    color:var(--red);font-size:13px;margin-bottom:14px;min-height:18px;line-height:1.6;
-  }
-  .send-btn{
-    width:100%;background:var(--red);color:var(--white);
-    font-size:17px;font-weight:700;padding:18px;border-radius:99px;border:none;
-    cursor:pointer;transition:transform .18s,opacity .2s;letter-spacing:.03em;font-family:inherit;
-  }
-  .send-btn:hover{transform:translateY(-2px);}
-  .send-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
-  .send-status{
-    text-align:center;font-size:14px;margin-top:16px;line-height:1.7;min-height:20px;
-  }
-  .send-status.success{color:var(--green);font-weight:700;}
-  .send-status.error{color:var(--red);}
-
-  /* 送信完了後の無料相談フォーム誘導 */
-  .post-send{
-    margin-top:26px;padding:28px 24px;background:var(--sky-light);
-    border-radius:16px;text-align:center;animation:fade .4s ease;
-  }
-  .post-send .post-send-tag{
-    display:inline-block;font-size:11px;font-weight:700;color:var(--navy);
-    background:var(--white);padding:5px 14px;border-radius:99px;
-    letter-spacing:.12em;margin-bottom:14px;
-  }
-  .post-send h4{
-    font-size:18px;font-weight:700;color:var(--navy);margin-bottom:10px;line-height:1.55;
-  }
-  .post-send p{
-    font-size:14px;color:var(--text);line-height:1.85;margin-bottom:20px;
-  }
-  .post-send p strong{color:var(--navy);font-weight:700;}
-  .post-send-btn{
-    display:inline-block;background:var(--red);color:var(--white);
-    font-size:16px;font-weight:700;padding:16px 36px;border-radius:99px;
-    text-decoration:none;transition:transform .18s,filter .2s;letter-spacing:.02em;
-  }
-  .post-send-btn:hover{transform:translateY(-2px);filter:brightness(1.08);}
-  .post-send-btn i{margin-left:10px;font-size:13px;}
-
-  /* PDF保存カード（控えめなアウトラインボタン） */
-  .pdf-save-card{
-    text-align:center;
-    margin:8px 0 22px;
-    padding:0;
-    background:transparent;
-  }
-  .pdf-save-card .pdf-note{
-    font-size:12px;color:var(--mid);
-    margin-top:12px;line-height:1.7;
-  }
-  .btn-pdf{
-    background:var(--white);color:var(--navy);
-    border:2px solid var(--navy);
-    font-size:14px;font-weight:700;
-    padding:12px 32px;border-radius:99px;
-    cursor:pointer;font-family:inherit;
-    transition:all .2s;letter-spacing:.02em;
-  }
-  .btn-pdf:hover{background:var(--navy);color:var(--white);}
-  .btn-pdf:disabled{opacity:.5;cursor:not-allowed;}
-  .btn-pdf i{margin-right:8px;}
-
-  .retry{text-align:center;margin-top:26px;}
-  .retry button{
-    background:none;border:none;color:var(--mid);font-size:14px;
-    text-decoration:underline;cursor:pointer;font-family:inherit;
-  }
-
-  .footer-brand{
-    text-align:center;font-size:12px;font-weight:400;
-    color:var(--light);letter-spacing:.25em;margin-top:48px;padding-bottom:10px;
-  }
-  .disclaimer{
-    font-size:12px;color:var(--light);text-align:center;
-    margin-top:18px;line-height:1.8;
-  }
-
-  @media(max-width:520px){
-    .wrap{padding:0 18px;}
-    header .eyebrow{font-size:11px;letter-spacing:.14em;}
-    header h1{font-size:28px;}
-    header{padding:44px 0 24px;}
-    .step-title{font-size:24px;}
-    .step-icon{width:66px;height:66px;font-size:28px;}
-    .q{padding:28px 22px;}
-    .q-title{font-size:19px;}
-    .result-hero .plan-name{font-size:32px;}
-    .result-hero{padding:38px 26px;}
-    .card,.estimate,.premium-banner{padding:24px;}
-    .btn-ghost{flex:0 0 96px;}
-    .cta-final{padding:34px 24px;}
-    .progress .labels{font-size:11px;}
-    .footer-brand{font-size:10px;letter-spacing:.16em;}
-  }
-  @media(max-width:360px){
-    header .eyebrow{font-size:10px;letter-spacing:.08em;}
-    .progress .labels{font-size:10px;letter-spacing:0;}
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="circle-deco"></div>
-  <div class="circle-deco small"></div>
-  <div class="wrap">
-    <div class="eyebrow">B I Z P A T O　M I N P A K U　M A N A G E M E N T</div>
-    <h1>かんたん<br>プラン診断</h1>
-    <div class="divider"></div>
-    <p class="lead">いくつかの質問にお答えいただくだけで、<br>あなたにぴったりのプランと必要なサポートが見つかります。<br>所要時間は約2分です。</p>
-  </div>
-</header>
-
-<div class="progress">
-  <div class="wrap">
-    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
-    <div class="labels">
-      <span id="lbl1" class="on">プラン診断</span>
-      <span id="lbl2">オプション診断</span>
-      <span id="lbl3">診断結果</span>
-    </div>
-  </div>
-</div>
-
-<main>
-<div class="wrap">
-
-  <!-- ============ STEP 1: PLAN ============ -->
-  <section class="step active" id="step1">
-    <div class="step-head">
-      <span class="step-tag">STEP 1 / 2</span>
-      <div class="step-icon"><i class="fa-solid fa-house-user"></i></div>
-      <h2 class="step-title">どこまでサポートが必要ですか？</h2>
-      <p class="step-sub">まずは運営形態をうかがい、最適なプランをご案内します。</p>
-    </div>
-
-    <!-- Q-A: 営業形態 -->
-    <div class="q" data-form-q="0">
-      <div class="q-num">はじめに<span class="cat-pill">運営形態</span></div>
-      <div class="q-title">どの形態で民泊を運営されますか（される予定ですか）？</div>
-      <div class="q-desc">運営形態によって、必要となるサポートやご契約の形が変わります。<strong>住宅宿泊事業法（民泊新法）</strong>では、ホスト様が住宅宿泊管理業の登録をお持ちでない場合、弊社との<strong>住宅宿泊管理業者契約</strong>が必要です。</div>
-      <div class="opts">
-        <button class="opt" data-v="ryokan"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">旅館業（簡易宿所など）<small>→ チェックインの進め方をうかがいます</small></span></button>
-        <button class="opt" data-v="minpaku"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">住宅宿泊事業法（民泊新法）<small>→ 管理業者契約が必要です</small></span></button>
-        <button class="opt" data-v="undecided"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">まだ決めていない・わからない<small>→ 無料相談でご一緒に確認します</small></span></button>
-      </div>
-    </div>
-
-    <!-- Q0: チェックイン要否（旅館業のときだけ表示） -->
-    <div id="checkinBlock" style="display:none;">
-      <div class="ops-intro">
-        <div class="ops-intro-line"></div>
-        <span>チェックインについて</span>
-      </div>
-      <div class="q" data-base-q="0">
-        <div class="q-num">チェックイン<span class="cat-pill">無人運営</span></div>
-        <div class="q-title">チェックインの自動化を、弊社にお任せしたいですか？</div>
-        <div class="q-desc">無人運営には、ゲストがQRコードでチェックインできる仕組み、スマートロックとの連携、<strong>宿泊者名簿の管理</strong>などが必要です。弊社の<strong>チェックインシステム</strong>を使えば、これらをまとめて自動化できます。</div>
-        <div class="q-note">※ <strong>旅館業の場合</strong>、すでにご自身でチェックインの仕組みをお持ちであれば、プラン契約なしで必要なオプションだけをご利用いただくこともできます。<br>※ <strong>住宅宿泊事業法（民泊新法）</strong>では、自前のチェックインシステムをご利用の場合でも、弊社との<strong>住宅宿泊管理業者契約</strong>が必要なため、基本プラン以上のご契約をお願いしております。</div>
-        <div class="opts">
-          <button class="opt" data-v="no"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で仕組みを用意できる／もうある<small>→ 必要なサポートだけご案内します</small></span></button>
-          <button class="opt" data-v="yes"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">お任せしたい<small>→ プラン診断にすすみます</small></span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 運営3問（Q0=はいのときだけ表示） -->
-    <div id="opsBlock" style="display:none;">
-      <div class="ops-intro">
-        <div class="ops-intro-line"></div>
-        <span>続けて、運営の進め方をうかがいます</span>
-      </div>
-
-      <!-- Q1 -->
-      <div class="q" data-plan-q="0">
-        <div class="q-num">質問 1 / 3<span class="cat-pill">ゲスト対応</span></div>
-        <div class="q-title">深夜や早朝のゲスト対応は、どうされますか？</div>
-        <div class="q-desc">民泊では時間を問わず、「お湯が出ない」「設備の使い方がわからない」「騒音で眠れない」といった連絡がゲストから入ります。弊社では<strong>24時間・日本人バイリンガルスタッフ</strong>が電話・メールで対応し、<strong>60分以内に返信</strong>します（駆けつけ対応や業者手配が必要な場合のみ、ホスト様にご連絡・対応をお願いします）。</div>
-        <div class="q-note">※ 現地への<strong>駆けつけ対応</strong>は、どのプランでもホスト様にて駆けつけ業者の手配が必要です（弊社の対応範囲外です）。</div>
-        <div class="opts">
-          <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分や家族・スタッフで対応できる</span></button>
-          <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">自分では難しい・本業に集中したい</span></button>
-        </div>
-      </div>
-
-      <!-- Q2 -->
-      <div class="q" data-plan-q="1">
-        <div class="q-num">質問 2 / 3<span class="cat-pill">清掃のやりとり</span></div>
-        <div class="q-title">運営開始後、予約ごとの清掃のやりとりは、どうされますか？</div>
-        <div class="q-desc">宿泊が終わるたびに清掃が必要です。予約ごとの清掃会社への連絡・日程調整や、「掃除が終わっていない」といったトラブルの確認など、運営開始後はこまめなやりとりが発生します。</div>
-        <div class="q-note">※ 清掃会社との契約・消耗品や備品の補充は、どちらのプランでもホスト様から清掃会社へ直接お願いいただきます（弊社の対応範囲外です）。<br>※ 開業前の清掃会社の紹介をご希望の場合は、お問い合わせフォームの「業者紹介」をご利用ください。</div>
-        <div class="opts">
-          <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で手配・確認できる</span></button>
-          <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">自動でやってほしい・手間を減らしたい</span></button>
-        </div>
-      </div>
-
-      <!-- Q3 -->
-      <div class="q" data-plan-q="2">
-        <div class="q-num">質問 3 / 3<span class="cat-pill">口コミ対応</span></div>
-        <div class="q-title">口コミ（特に低評価）への対応は、どうされますか？</div>
-        <div class="q-desc">ゲストの口コミは予約数に直結します。特に低評価がついたときは、原因の分析・清掃会社への共有・返信文の作成まで対応が必要です。</div>
-        <div class="opts">
-          <button class="opt" data-v="yes"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で対応できる</span></button>
-          <button class="opt" data-v="no"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">プロに任せたい</span></button>
-        </div>
-      </div>
-    </div>
-
-    <div class="nav">
-      <button class="btn btn-primary" id="toStep2" disabled>オプション診断にすすむ</button>
-    </div>
-  </section>
-
-  <!-- ============ STEP 2: OPTIONS ============ -->
-  <section class="step" id="step2">
-    <div class="step-head">
-      <span class="step-tag">STEP 2 / 2</span>
-      <div class="step-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-      <h2 class="step-title">どのオプションが必要ですか？</h2>
-      <p class="step-sub">民泊を始めるのに必要な作業を、ひとつずつ確認します。<br>「わからない」「不安」もそのままお選びください。</p>
-    </div>
-
-    <!-- 立地質問 -->
-    <div class="q" data-loc-q="0">
-      <div class="q-num"><span class="cat-pill">物件の所在地</span></div>
-      <div class="q-title">物件の所在地は東京23区内ですか？</div>
-      <div class="q-desc">所在地によって、ご利用いただけるオプションが変わります。鍵・備品の設置をまとめて代行する<strong>初期セットアップ</strong>は、東京23区内の物件が対象です。</div>
-      <div class="opts">
-        <button class="opt" data-v="in"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">東京23区内です</span></button>
-        <button class="opt" data-v="out"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">東京23区外です</span></button>
-      </div>
-    </div>
-
-    <div id="optContainer"></div>
-
-    <div class="nav">
-      <button class="btn btn-ghost" id="backToStep1">もどる</button>
-      <button class="btn btn-primary" id="toResult" disabled>診断結果をみる</button>
-    </div>
-  </section>
-
-  <!-- ============ RESULT ============ -->
-  <section class="step" id="stepResult">
-    <div class="result-hero">
-      <div class="circle-deco"></div>
-      <div class="label">あなたへのおすすめプラン</div>
-      <div class="plan-name" id="resPlanName">―</div>
-      <div class="plan-price" id="resPlanPrice">―</div>
-      <div class="plan-tag" id="resPlanTag">―</div>
-    </div>
-
-    <div class="card">
-      <h3><span class="h-ic"><i class="fa-solid fa-list-check"></i></span>おすすめのサポート構成</h3>
-      <div id="resIncluded"></div>
-    </div>
-
-    <div class="estimate">
-      <h3><span class="h-ic"><i class="fa-solid fa-calculator"></i></span>概算お見積り</h3>
-      <div id="resEstimate"></div>
-      <div class="est-note" id="resEstNote"></div>
-    </div>
-
-    <div class="cta-final">
-      <h3>診断結果を送る</h3>
-      <p>お名前とメールアドレスをご入力のうえ送信ください。<br>送信後、<strong>無料相談フォーム</strong>へご案内します。診断結果をもとに専門スタッフが正式なお見積りと受託可否をご回答します。</p>
-      <div class="send-form">
-        <div class="form-row">
-          <div class="form-field">
-            <label for="lastName">姓 <span class="req">必須</span></label>
-            <input type="text" id="lastName" placeholder="山田" autocomplete="family-name">
-          </div>
-          <div class="form-field">
-            <label for="firstName">名 <span class="req">必須</span></label>
-            <input type="text" id="firstName" placeholder="太郎" autocomplete="given-name">
-          </div>
-        </div>
-        <div class="form-field">
-          <label for="email">メールアドレス <span class="req">必須</span></label>
-          <input type="email" id="email" placeholder="example@email.com" autocomplete="email">
-        </div>
-        <div class="form-error" id="formError"></div>
-        <button class="send-btn" id="sendBtn">診断結果を送る</button>
-        <div class="send-status" id="sendStatus"></div>
-        <div class="post-send" id="postSend" style="display:none;">
-          <div class="post-send-tag">NEXT STEP</div>
-          <h4>続いて、無料相談フォームへお進みください</h4>
-          <p>担当者がより詳しくお話をうかがい、<br><strong>正式なお見積り</strong>と<strong>受託可否</strong>をご回答します。<br>ご相談は無料です。お気軽にどうぞ。</p>
-          <a href="https://bizpato.com/minpaku/minpaku-lp/lp-order/#form" target="_blank" rel="noopener" class="post-send-btn">無料相談フォームへ <i class="fa-solid fa-arrow-right"></i></a>
-        </div>
-      </div>
-    </div>
-
-    <div class="premium-banner" id="premiumBanner">
-      <div class="circle-deco"></div>
-      <div class="pb-tag">＋ さらに上のプランをお探しの方へ</div>
-      <h4>プレミアムプラン（フルおまかせ）</h4>
-      <p><strong>旅館業</strong>で、東京都23区内の同じ建物に<strong>3室以上</strong>をお持ちの方は、ゲスト対応から清掃・価格調整まですべておまかせいただける成果報酬型のプレミアムプランもご用意しています。詳しくは無料相談でご案内します。</p>
-    </div>
-
-    <div class="pdf-save-card" id="pdfSaveCard" style="display:none;">
-      <button class="btn-pdf" id="downloadPdfBtn"><i class="fa-solid fa-download"></i>診断結果をPDFで保存する</button>
-      <p class="pdf-note">送信内容の控えとしていつでもダウンロードできます</p>
-    </div>
-
-    <div class="retry">
-      <button id="retryBtn">もう一度診断する</button>
-    </div>
-
-    <p class="disclaimer">
-      ※ 本診断の結果・概算金額はあくまで目安です。正式なプラン・お見積りは、物件の状況や受託可否の確認のうえ、確定いたします。<br>
-      ※ 表示金額はすべて税抜・1物件あたりです。別途、Beds24・PriceLabs等の実費（ホスト様負担）が発生します。
-    </p>
-  </section>
-
-  <div class="footer-brand">BIZPATO MINPAKU MANAGEMENT</div>
-
-</div>
-</main>
-
-<script>
 // ===== Data =====
 const PLAN = {
   basic:    { name:'基本プラン',   monthly:19800, initial:34800, tag:'初期セットアップ中心・自分で運営したい方に' },
@@ -1366,23 +745,25 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>PDF生成中…';
 
   let tempDiv = null;
+  let overlay = null;
+
   try{
-    // 必要なライブラリが読み込まれているか確認
     if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
       throw new Error('PDF生成ライブラリが読み込まれていません');
     }
     const { jsPDF } = window.jspdf;
 
+    // 全画面オーバーレイで作業中の要素を隠す
+    overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.96);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:"Noto Sans JP",sans-serif;';
+    overlay.innerHTML = '<div style="text-align:center;color:#1a2e4a;"><div style="width:50px;height:50px;border:4px solid #e0f2fe;border-top-color:#1a2e4a;border-radius:50%;animation:pdfspin 1s linear infinite;margin:0 auto 16px;"></div><p style="font-weight:700;font-size:16px;margin:0;">PDF生成中…</p></div><style>@keyframes pdfspin{to{transform:rotate(360deg);}}</style>';
+    document.body.appendChild(overlay);
+
+    // PDF対象の要素を画面に配置（オーバーレイの下に隠れる）
     const pdfHtml = buildPDFContent();
     tempDiv = document.createElement('div');
     tempDiv.innerHTML = pdfHtml.trim();
-    // 画面の下の見えない位置に配置（描画は確実、ユーザーには見えない）
-    tempDiv.style.position = 'fixed';
-    tempDiv.style.left = '0';
-    tempDiv.style.top = '100vh';
-    tempDiv.style.width = '800px';
-    tempDiv.style.background = '#ffffff';
-    tempDiv.style.zIndex = '-1';
+    tempDiv.style.cssText = 'position:fixed;top:0;left:0;width:800px;background:#ffffff;z-index:1;';
     document.body.appendChild(tempDiv);
 
     const pdfElement = tempDiv.firstElementChild;
@@ -1390,37 +771,40 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
       throw new Error('PDF対象の要素が見つかりません');
     }
 
-    // Webフォント読み込み待機
+    // フォント読み込み待機 + レンダリング待機
     if(document.fonts && document.fonts.ready){
       await document.fonts.ready;
     }
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(r => setTimeout(r, 300));
 
-    // html2canvasで要素を画像化
+    // html2canvasで画像化
     const canvas = await html2canvas(pdfElement, {
       scale: 2,
       useCORS: true,
+      allowTaint: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: 800,
-      windowWidth: 800
+      width: pdfElement.offsetWidth,
+      height: pdfElement.offsetHeight,
+      windowWidth: 800,
+      windowHeight: pdfElement.offsetHeight
     });
 
     if(canvas.width === 0 || canvas.height === 0){
-      throw new Error('キャプチャに失敗しました（サイズ:' + canvas.width + 'x' + canvas.height + '）');
+      throw new Error('描画失敗 (サイズ:' + canvas.width + 'x' + canvas.height + ')');
     }
 
-    // jsPDFでA4サイズのPDFを生成
+    // jsPDFでA4 PDFを生成
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();   // 210mm
-    const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
     const margin = 10;
     const imgWidth = pdfWidth - (margin * 2);
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
 
-    // 長い場合はページ分割
+    // ページ分割
     let heightLeft = imgHeight;
     let position = margin;
     pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
@@ -1433,7 +817,6 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
       heightLeft -= (pdfHeight - margin * 2);
     }
 
-    // ファイル名生成と保存
     const lastName = document.getElementById('lastName').value.trim() || 'お客様';
     const firstName = document.getElementById('firstName').value.trim() || '';
     const today = new Date();
@@ -1444,13 +827,9 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
     console.error('PDF generation failed:', e);
     alert('PDFの生成に失敗しました。\nエラー内容: ' + (e.message || e));
   }finally{
-    if(tempDiv && tempDiv.parentNode){
-      tempDiv.parentNode.removeChild(tempDiv);
-    }
+    if(tempDiv && tempDiv.parentNode){ tempDiv.parentNode.removeChild(tempDiv); }
+    if(overlay && overlay.parentNode){ overlay.parentNode.removeChild(overlay); }
     btn.disabled = false;
     btn.innerHTML = originalText;
   }
 });
-</script>
-</body>
-</html>
