@@ -267,7 +267,7 @@
 
   .cta-final{
     background:var(--white);border:1px solid var(--line);border-radius:24px;
-    padding:44px 32px;text-align:center;
+    padding:44px 32px;text-align:center;margin-bottom:22px;
   }
   .cta-final h3{font-size:24px;font-weight:700;margin-bottom:12px;color:var(--navy);}
   .cta-final p{font-size:15px;color:var(--mid);margin-bottom:28px;line-height:1.85;}
@@ -1003,7 +1003,7 @@ function buildResult(){
       </div>`);
     // free perks for standard（予約サイトSU・ハウスマニュアルが含まれる）
     if(planKey==='standard'){
-      ['予約サイトへの掲載','ハウスマニュアル作成','OTA自動送信メール作成','保守サービス（月2回まで）'].forEach(p=>{
+      ['予約サイトへの掲載','ハウスマニュアルの作成','OTA自動送信メール作成','保守サービス（月2回まで）'].forEach(p=>{
         incEl.insertAdjacentHTML('beforeend',`
           <div class="inc-row">
             <div class="name">${p}<small>スタンダードに無償で付いてきます</small></div>
@@ -1104,7 +1104,7 @@ function buildResult(){
 
   // ===== 送信用に結果データを保存 =====
   const freebies = (planKey==='standard')
-    ? ['予約サイトへの掲載','ハウスマニュアル作成','OTA自動送信メール作成','保守サービス（月2回まで）']
+    ? ['予約サイトへの掲載','ハウスマニュアルの作成','OTA自動送信メール作成','保守サービス（月2回まで）']
     : [];
   lastResult = {
     planKey: planKey,
@@ -1369,14 +1369,17 @@ function buildPDFContent(){
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:8px;">▼ おすすめのサポート構成</div>
         <table style="width:100%;border-collapse:collapse;">${supportRowsHtml}</table>
       </div>
-      <div class="pdf-section" style="background:#e0f2fe;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+      ${(initialFee > 0 || monthlyFee > 0) ? `<div class="pdf-section" style="background:#e0f2fe;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 概算お見積り</div>
         <table style="width:100%;border-collapse:collapse;">
           ${initialFee > 0 ? `<tr><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">初期費用 合計</td><td style="padding:8px 0;font-size:17px;font-weight:900;color:#ea4d3c;text-align:right;">${initialFee.toLocaleString()}円</td></tr>` : ''}
           ${monthlyFee > 0 ? `<tr style="border-top:1px solid #c5dbf0;"><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">月額費用 合計</td><td style="padding:8px 0;font-size:17px;font-weight:900;color:#ea4d3c;text-align:right;">${monthlyFee.toLocaleString()}円</td></tr>` : ''}
         </table>
         <div style="font-size:11px;color:#6b7280;margin-top:10px;line-height:1.7;">※ 1物件あたりの概算（税抜）です。正式なお見積りは打ち合わせ後に確定いたします。<br>※ 別途、Beds24・PriceLabs等の実費がホスト様負担となる場合があります。</div>
-      </div>
+      </div>` : `<div class="pdf-section" style="background:#e0f2fe;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 概算お見積り</div>
+        <div style="font-size:13px;color:#1a2e4a;line-height:1.9;">現時点でご利用が必要なサポートはなく、お見積り対象がございません。ご利用になりたいオプションが決まりましたら、単品でのお見積りも可能です。まずは無料相談でご状況をうかがいます。</div>
+      </div>`}
       <div class="pdf-section" style="background:#f8f9fb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ 診断回答内容</div>
         <table style="width:100%;border-collapse:collapse;">
@@ -1440,48 +1443,75 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
     }
     await new Promise(r => setTimeout(r, 300));
 
-    // 各セクションを個別にキャプチャして配置
+    // セクション境界位置を記録（ページ分割の候補位置）
     const sections = pdfRoot.querySelectorAll('.pdf-section');
-    if(sections.length === 0){
-      throw new Error('PDFセクションが見つかりません');
+    const sectionBottoms = [];  // 各セクションの下端のy座標(px、pdfRoot基準)
+    sections.forEach(sec => {
+      sectionBottoms.push(sec.offsetTop + sec.offsetHeight);
+    });
+
+    // 全体を1枚の画像としてキャプチャ
+    const canvas = await html2canvas(pdfRoot, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: pdfRoot.offsetWidth,
+      height: pdfRoot.offsetHeight,
+      windowWidth: 800
+    });
+
+    if(canvas.width === 0 || canvas.height === 0){
+      throw new Error('描画失敗 (サイズ:' + canvas.width + 'x' + canvas.height + ')');
     }
 
+    // PDFセットアップ
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 12;
-    const contentWidth = pdfWidth - margin * 2;
-    const maxYPerPage = pdfHeight - margin;
-    let yPos = margin;
-    let isFirstSection = true;
+    const margin = 10;
+    const imgWidth = pdfWidth - (margin * 2);
+    const pageContentHeight = pdfHeight - (margin * 2);
 
-    for(let i = 0; i < sections.length; i++){
-      const section = sections[i];
-      const canvas = await html2canvas(section, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: null,
-        width: section.offsetWidth,
-        height: section.offsetHeight,
-        windowWidth: 800
-      });
-      if(canvas.width === 0 || canvas.height === 0) continue;
+    // canvas→pdf寸法のスケール係数
+    const canvasScale = canvas.width / pdfRoot.offsetWidth;  // html2canvasのscale=2
+    const maxPagePxHeight = (pageContentHeight / imgWidth) * canvas.width;
 
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    // ページ分割しながらクロップ画像を貼っていく
+    let yPxStart = 0;
+    while (yPxStart < canvas.height) {
+      let yPxEnd = Math.min(yPxStart + maxPagePxHeight, canvas.height);
 
-      // 新ページが必要か判定（セクション単位で改ページ）
-      if(!isFirstSection && (yPos + imgHeight > maxYPerPage)){
-        pdf.addPage();
-        yPos = margin;
+      // 画像の最後でなければ、最も近いセクション境界で切る
+      if (yPxEnd < canvas.height) {
+        // canvas座標でのセクション境界候補
+        const candidates = sectionBottoms
+          .map(b => b * canvasScale)
+          .filter(b => b > yPxStart + 100 && b <= yPxEnd);  // 最低限の高さを確保
+        if (candidates.length > 0) {
+          yPxEnd = candidates[candidates.length - 1];
+        }
       }
 
-      pdf.addImage(imgData, 'JPEG', margin, yPos, imgWidth, imgHeight);
-      yPos += imgHeight + 4; // セクション間の小余白
-      isFirstSection = false;
+      const cropHeight = yPxEnd - yPxStart;
+
+      // 該当範囲を別キャンバスにクロップ
+      const cropCanvas = document.createElement('canvas');
+      cropCanvas.width = canvas.width;
+      cropCanvas.height = cropHeight;
+      const ctx = cropCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+      ctx.drawImage(canvas, 0, yPxStart, canvas.width, cropHeight, 0, 0, canvas.width, cropHeight);
+
+      const imgData = cropCanvas.toDataURL('image/jpeg', 0.92);
+      const cropImgHeight = (cropHeight * imgWidth) / canvas.width;
+
+      if (yPxStart > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, cropImgHeight);
+
+      yPxStart = yPxEnd;
     }
 
     const lastName = document.getElementById('lastName').value.trim() || 'お客様';
