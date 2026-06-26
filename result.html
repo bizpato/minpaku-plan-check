@@ -1492,8 +1492,7 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
     pdf.save(filename);
   }catch(e){
     console.error('PDF generation failed:', e);
-    alert('PDFの生成に失敗しました。
-エラー内容: ' + (e.message || e));
+    alert('PDFの生成に失敗しました。\nエラー内容: ' + (e.message || e));
   }finally{
     if(tempDiv && tempDiv.parentNode){ tempDiv.parentNode.removeChild(tempDiv); }
     if(overlay && overlay.parentNode){ overlay.parentNode.removeChild(overlay); }
