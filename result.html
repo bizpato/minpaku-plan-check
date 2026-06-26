@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
     --navy:#1a2e4a;
@@ -250,8 +251,8 @@
   .premium-banner{
     position:relative;overflow:hidden;
     background:#fffae6;color:var(--navy);
-    border:2px solid var(--navy);
-    border-radius:20px;padding:32px;margin-bottom:22px;
+    border-radius:20px;padding:32px;
+    margin-top:8px;margin-bottom:22px;
   }
   .premium-banner .circle-deco{
     position:absolute;width:240px;height:240px;border-radius:50%;
@@ -347,7 +348,7 @@
   /* PDF保存カード（控えめなアウトラインボタン） */
   .pdf-save-card{
     text-align:center;
-    margin:8px 0 22px;
+    margin:8px 0 28px;
     padding:0;
     background:transparent;
   }
@@ -1102,12 +1103,16 @@ function buildResult(){
   document.getElementById('resEstNote').innerHTML=note;
 
   // ===== 送信用に結果データを保存 =====
+  const freebies = (planKey==='standard')
+    ? ['予約サイトへの掲載','ハウスマニュアル作成','OTA自動送信メール作成','保守サービス（月2回まで）']
+    : [];
   lastResult = {
     planKey: planKey,
     planName: (planKey==='none') ? (recommended.length>0?'必要なサポートのみ（プラン契約なし）':'まずはご相談から（プラン契約なし）') : plan.name,
     initialSum: (planKey==='none' && recommended.length===0) ? 0 : initialSum,
     monthlySum: (planKey==='none' && recommended.length===0) ? 0 : monthlySum,
-    recommended: recommended.map(op=>op.name)
+    recommended: recommended.map(op=>op.name),
+    freebies: freebies
   };
 }
 
@@ -1307,9 +1312,24 @@ function buildPDFContent(){
   const planName = lastResult ? lastResult.planName : '―';
   const initialFee = lastResult ? lastResult.initialSum : 0;
   const monthlyFee = lastResult ? lastResult.monthlySum : 0;
-  const recommendedOpts = lastResult && lastResult.recommended.length > 0
-    ? lastResult.recommended.map(name => `<li style="margin:5px 0;color:#1a2e4a;font-size:13px;">${name}</li>`).join('')
-    : '<li style="color:#9ca3af;font-size:13px;">追加サポートなし</li>';
+
+  // おすすめサポート（無償付帯 + 推奨オプション）
+  let supportListItems = '';
+  if(lastResult){
+    // 無償付帯項目（スタンダードプランに含まれるサポート）
+    if(lastResult.freebies && lastResult.freebies.length > 0){
+      lastResult.freebies.forEach(name => {
+        supportListItems += `<li style="margin:6px 0;color:#1a2e4a;font-size:13px;line-height:1.5;">${name} <span style="color:#3d9970;font-weight:700;font-size:11px;margin-left:4px;">（無償付帯）</span></li>`;
+      });
+    }
+    // 推奨オプション
+    lastResult.recommended.forEach(name => {
+      supportListItems += `<li style="margin:6px 0;color:#1a2e4a;font-size:13px;line-height:1.5;">${name}</li>`;
+    });
+  }
+  if(!supportListItems){
+    supportListItems = '<li style="color:#9ca3af;font-size:13px;">追加サポートなし</li>';
+  }
 
   return `
     <div style="font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;width:800px;padding:36px;box-sizing:border-box;background:#ffffff;color:#1a2e4a;line-height:1.6;">
@@ -1338,7 +1358,7 @@ function buildPDFContent(){
       </div>
       <div style="background:#ffffff;border:2px solid #e5e7eb;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ おすすめサポート</div>
-        <ul style="margin:0;padding-left:22px;">${recommendedOpts}</ul>
+        <ul style="margin:0;padding-left:22px;">${supportListItems}</ul>
       </div>
       <div style="background:#f8f9fb;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 診断回答内容</div>
