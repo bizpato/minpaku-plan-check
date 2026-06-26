@@ -1102,9 +1102,18 @@ function buildResult(){
   lastResult = {
     planKey: planKey,
     planName: (planKey==='none') ? (recommended.length>0?'必要なサポートのみ（プラン契約なし）':'まずはご相談から（プラン契約なし）') : plan.name,
+    planMonthlyBase: plan ? plan.monthly : 0,
+    planInitialBase: plan ? plan.initial : 0,
     initialSum: (planKey==='none' && recommended.length===0) ? 0 : initialSum,
     monthlySum: (planKey==='none' && recommended.length===0) ? 0 : monthlySum,
     recommended: recommended.map(op=>op.name),
+    recommendedDetails: recommended.map(op=>({
+      name: op.name,
+      type: op.type,
+      priceLabel: op.type==='monthly'
+        ? `月額 ${op.price.toLocaleString()}円${op.unit||''}`
+        : `${op.price.toLocaleString()}円`
+    })),
     freebies: freebies
   };
 }
@@ -1305,69 +1314,77 @@ function buildPDFContent(){
   const planName = lastResult ? lastResult.planName : '―';
   const initialFee = lastResult ? lastResult.initialSum : 0;
   const monthlyFee = lastResult ? lastResult.monthlySum : 0;
+  const planMonthlyBase = lastResult ? lastResult.planMonthlyBase : 0;
+  const planInitialBase = lastResult ? lastResult.planInitialBase : 0;
 
-  // おすすめサポート（無償付帯 + 推奨オプション）
-  let supportListItems = '';
+  // おすすめサポート（プラン本体 + 無償付帯 + 推奨オプション）テーブル形式
+  let supportRowsHtml = '';
   if(lastResult){
-    // 無償付帯項目（スタンダードプランに含まれるサポート）
+    // プラン本体（プランあり時）
+    if(lastResult.planKey !== 'none' && planMonthlyBase > 0){
+      supportRowsHtml += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">${planName}</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">基本のプラン料金</div></td><td style="padding:14px 0;color:#1a2e4a;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">月額 ${planMonthlyBase.toLocaleString()}円</td></tr>`;
+    }
+    // 無償付帯項目
     if(lastResult.freebies && lastResult.freebies.length > 0){
       lastResult.freebies.forEach(name => {
-        supportListItems += `<li style="margin:6px 0;color:#1a2e4a;font-size:13px;line-height:1.5;">${name} <span style="color:#3d9970;font-weight:700;font-size:11px;margin-left:4px;">（無償付帯）</span></li>`;
+        supportRowsHtml += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">${name}</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">スタンダードに無償で付いてきます</div></td><td style="padding:14px 0;color:#3d9970;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">無償付帯</td></tr>`;
       });
     }
-    // 推奨オプション
-    lastResult.recommended.forEach(name => {
-      supportListItems += `<li style="margin:6px 0;color:#1a2e4a;font-size:13px;line-height:1.5;">${name}</li>`;
-    });
+    // 推奨オプション（金額付き）
+    if(lastResult.recommendedDetails && lastResult.recommendedDetails.length > 0){
+      lastResult.recommendedDetails.forEach(item => {
+        supportRowsHtml += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">${item.name}</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">おすすめのサポート</div></td><td style="padding:14px 0;color:#1a2e4a;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">${item.priceLabel}</td></tr>`;
+      });
+    }
   }
-  if(!supportListItems){
-    supportListItems = '<li style="color:#9ca3af;font-size:13px;">追加サポートなし</li>';
+  if(!supportRowsHtml){
+    supportRowsHtml = '<tr><td colspan="2" style="padding:14px 0;color:#9ca3af;font-size:13px;text-align:center;">追加サポートなし</td></tr>';
   }
 
   return `
-    <div style="font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;width:800px;padding:36px;box-sizing:border-box;background:#ffffff;color:#1a2e4a;line-height:1.6;">
-      <div style="background:linear-gradient(135deg, #1a2e4a 0%, #2d4870 100%);color:#ffffff;padding:28px 32px;border-radius:16px;margin-bottom:18px;text-align:center;">
+    <div style="font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;width:760px;padding:0;box-sizing:border-box;background:#ffffff;color:#1a2e4a;line-height:1.6;">
+      <div class="pdf-section" style="background:linear-gradient(135deg, #1a2e4a 0%, #2d4870 100%);color:#ffffff;padding:28px 32px;border-radius:16px;margin-bottom:14px;text-align:center;">
         <div style="font-size:10px;letter-spacing:0.28em;color:#9ca3af;margin-bottom:6px;">B I Z P A T O　M I N P A K U　M A N A G E M E N T</div>
-        <div style="font-size:26px;font-weight:900;margin-bottom:6px;">民泊管理バンク｜診断結果</div>
+        <div style="font-size:24px;font-weight:900;margin-bottom:6px;">民泊管理バンク｜診断結果</div>
         <div style="font-size:12px;color:#c9d6e8;">作成日：${dateStr}</div>
       </div>
-      <div style="background:#e0f2fe;border-radius:14px;padding:18px 24px;margin-bottom:18px;">
+      <div class="pdf-section" style="background:#e0f2fe;border-radius:14px;padding:18px 24px;margin-bottom:14px;">
         <div style="font-size:10px;font-weight:700;color:#1a2e4a;letter-spacing:0.16em;margin-bottom:6px;">CUSTOMER</div>
-        <div style="font-size:18px;font-weight:700;color:#1a2e4a;">${customerName}</div>
+        <div style="font-size:17px;font-weight:700;color:#1a2e4a;">${customerName}</div>
         ${email ? `<div style="font-size:12px;color:#4b5563;margin-top:4px;">${email}</div>` : ''}
       </div>
-      <div style="background:linear-gradient(135deg, #1a2e4a 0%, #24405f 100%);color:#ffffff;border-radius:14px;padding:26px 28px;margin-bottom:18px;text-align:center;">
-        <div style="font-size:11px;color:#d7f0ff;letter-spacing:0.16em;margin-bottom:8px;">あなたへのおすすめプラン</div>
-        <div style="font-size:30px;font-weight:900;line-height:1.2;">${planName}</div>
-        ${monthlyFee > 0 ? `<div style="font-size:14px;color:#c9d6e8;margin-top:8px;">月額 ${monthlyFee.toLocaleString()}円 / 物件（税抜）</div>` : ''}
+      <div class="pdf-section" style="background:linear-gradient(135deg, #1a2e4a 0%, #24405f 100%);color:#ffffff;border-radius:14px;padding:24px 28px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:11px;color:#d7f0ff;letter-spacing:0.16em;margin-bottom:6px;">あなたへのおすすめプラン</div>
+        <div style="font-size:28px;font-weight:900;line-height:1.2;">${planName}</div>
+        ${planMonthlyBase > 0 ? `<div style="font-size:13px;color:#c9d6e8;margin-top:6px;">基本のプラン料金　月額 ${planMonthlyBase.toLocaleString()}円 / 物件（税抜）</div>` : ''}
       </div>
-      <div style="background:#e0f2fe;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
+      <div class="pdf-section" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:8px;">▼ おすすめのサポート構成</div>
+        <table style="width:100%;border-collapse:collapse;">${supportRowsHtml}</table>
+      </div>
+      <div class="pdf-section" style="background:#e0f2fe;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 概算お見積り</div>
         <table style="width:100%;border-collapse:collapse;">
-          ${initialFee > 0 ? `<tr><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">初期費用 合計</td><td style="padding:8px 0;font-size:18px;font-weight:900;color:#ea4d3c;text-align:right;">${initialFee.toLocaleString()}円</td></tr>` : ''}
-          ${monthlyFee > 0 ? `<tr style="border-top:1px solid #c5dbf0;"><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">月額費用 合計</td><td style="padding:8px 0;font-size:18px;font-weight:900;color:#ea4d3c;text-align:right;">${monthlyFee.toLocaleString()}円</td></tr>` : ''}
+          ${initialFee > 0 ? `<tr><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">初期費用 合計</td><td style="padding:8px 0;font-size:17px;font-weight:900;color:#ea4d3c;text-align:right;">${initialFee.toLocaleString()}円</td></tr>` : ''}
+          ${monthlyFee > 0 ? `<tr style="border-top:1px solid #c5dbf0;"><td style="padding:8px 0;font-size:14px;color:#1a2e4a;">月額費用 合計</td><td style="padding:8px 0;font-size:17px;font-weight:900;color:#ea4d3c;text-align:right;">${monthlyFee.toLocaleString()}円</td></tr>` : ''}
         </table>
         <div style="font-size:11px;color:#6b7280;margin-top:10px;line-height:1.7;">※ 1物件あたりの概算（税抜）です。正式なお見積りは打ち合わせ後に確定いたします。<br>※ 別途、Beds24・PriceLabs等の実費がホスト様負担となる場合があります。</div>
       </div>
-      <div style="background:#ffffff;border:2px solid #e5e7eb;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
-        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ おすすめサポート</div>
-        <ul style="margin:0;padding-left:22px;">${supportListItems}</ul>
-      </div>
-      <div style="background:#f8f9fb;border-radius:14px;padding:22px 26px;margin-bottom:18px;">
-        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 診断回答内容</div>
+      <div class="pdf-section" style="background:#f8f9fb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ 診断回答内容</div>
         <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:7px 0;color:#6b7280;font-size:13px;width:40%;">営業形態</td><td style="padding:7px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${formTypeLabel}</td></tr>
-          ${baseLabel ? `<tr><td style="padding:7px 0;color:#6b7280;font-size:13px;">チェックインの自動化</td><td style="padding:7px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${baseLabel}</td></tr>` : ''}
+          <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;width:40%;">営業形態</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${formTypeLabel}</td></tr>
+          ${baseLabel ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">チェックインの自動化</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${baseLabel}</td></tr>` : ''}
           ${opsRows}
-          <tr><td style="padding:7px 0;color:#6b7280;font-size:13px;">物件の所在地</td><td style="padding:7px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${locationLabel}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">物件の所在地</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${locationLabel}</td></tr>
         </table>
-        ${optsRows ? `<div style="border-top:1px dashed #d5dce5;padding-top:14px;margin-top:14px;">
-          <div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:8px;letter-spacing:0.04em;">オプション別の選択</div>
-          <table style="width:100%;border-collapse:collapse;">${optsRows}</table>
-        </div>` : ''}
       </div>
-      <div style="border-top:2px solid #e5e7eb;padding-top:18px;margin-top:24px;text-align:center;">
-        <div style="font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:14px;">
+      ${optsRows ? `<div class="pdf-section" style="background:#f8f9fb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ オプション別の選択</div>
+        <table style="width:100%;border-collapse:collapse;">${optsRows}</table>
+      </div>` : ''}
+      <div class="pdf-section" style="padding:14px 0;text-align:center;">
+        <div style="font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:12px;">
           ※ 本診断の結果・概算金額はあくまで目安です。正式なプラン・お見積りは、物件の状況や受託可否の確認のうえ、確定いたします。
         </div>
         <div style="background:#f8f9fb;border-radius:10px;padding:12px;font-size:11px;color:#1a2e4a;line-height:1.7;">
@@ -1394,68 +1411,70 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
     }
     const { jsPDF } = window.jspdf;
 
-    // 全画面オーバーレイで作業中の要素を隠す
+    // 全画面オーバーレイ
     overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.96);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:"Noto Sans JP",sans-serif;';
     overlay.innerHTML = '<div style="text-align:center;color:#1a2e4a;"><div style="width:50px;height:50px;border:4px solid #e0f2fe;border-top-color:#1a2e4a;border-radius:50%;animation:pdfspin 1s linear infinite;margin:0 auto 16px;"></div><p style="font-weight:700;font-size:16px;margin:0;">PDF生成中…</p></div><style>@keyframes pdfspin{to{transform:rotate(360deg);}}</style>';
     document.body.appendChild(overlay);
 
-    // PDF対象の要素を画面に配置（オーバーレイの下に隠れる）
     const pdfHtml = buildPDFContent();
     tempDiv = document.createElement('div');
     tempDiv.innerHTML = pdfHtml.trim();
-    tempDiv.style.cssText = 'position:fixed;top:0;left:0;width:800px;background:#ffffff;z-index:1;';
+    tempDiv.style.cssText = 'position:fixed;top:0;left:0;width:760px;background:#ffffff;z-index:1;padding:20px;';
     document.body.appendChild(tempDiv);
 
-    const pdfElement = tempDiv.firstElementChild;
-    if(!pdfElement){
+    const pdfRoot = tempDiv.firstElementChild;
+    if(!pdfRoot){
       throw new Error('PDF対象の要素が見つかりません');
     }
 
-    // フォント読み込み待機 + レンダリング待機
     if(document.fonts && document.fonts.ready){
       await document.fonts.ready;
     }
     await new Promise(r => setTimeout(r, 300));
 
-    // html2canvasで画像化
-    const canvas = await html2canvas(pdfElement, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      width: pdfElement.offsetWidth,
-      height: pdfElement.offsetHeight,
-      windowWidth: 800,
-      windowHeight: pdfElement.offsetHeight
-    });
-
-    if(canvas.width === 0 || canvas.height === 0){
-      throw new Error('描画失敗 (サイズ:' + canvas.width + 'x' + canvas.height + ')');
+    // 各セクションを個別にキャプチャして配置
+    const sections = pdfRoot.querySelectorAll('.pdf-section');
+    if(sections.length === 0){
+      throw new Error('PDFセクションが見つかりません');
     }
 
-    // jsPDFでA4 PDFを生成
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10;
-    const imgWidth = pdfWidth - (margin * 2);
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const margin = 12;
+    const contentWidth = pdfWidth - margin * 2;
+    const maxYPerPage = pdfHeight - margin;
+    let yPos = margin;
+    let isFirstSection = true;
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    for(let i = 0; i < sections.length; i++){
+      const section = sections[i];
+      const canvas = await html2canvas(section, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: null,
+        width: section.offsetWidth,
+        height: section.offsetHeight,
+        windowWidth: 800
+      });
+      if(canvas.width === 0 || canvas.height === 0) continue;
 
-    // ページ分割
-    let heightLeft = imgHeight;
-    let position = margin;
-    pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
-    heightLeft -= (pdfHeight - margin * 2);
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
 
-    while(heightLeft > 0){
-      position = heightLeft - imgHeight + margin;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
-      heightLeft -= (pdfHeight - margin * 2);
+      // 新ページが必要か判定（セクション単位で改ページ）
+      if(!isFirstSection && (yPos + imgHeight > maxYPerPage)){
+        pdf.addPage();
+        yPos = margin;
+      }
+
+      pdf.addImage(imgData, 'JPEG', margin, yPos, imgWidth, imgHeight);
+      yPos += imgHeight + 4; // セクション間の小余白
+      isFirstSection = false;
     }
 
     const lastName = document.getElementById('lastName').value.trim() || 'お客様';
@@ -1466,7 +1485,8 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
     pdf.save(filename);
   }catch(e){
     console.error('PDF generation failed:', e);
-    alert('PDFの生成に失敗しました。\nエラー内容: ' + (e.message || e));
+    alert('PDFの生成に失敗しました。
+エラー内容: ' + (e.message || e));
   }finally{
     if(tempDiv && tempDiv.parentNode){ tempDiv.parentNode.removeChild(tempDiv); }
     if(overlay && overlay.parentNode){ overlay.parentNode.removeChild(overlay); }
