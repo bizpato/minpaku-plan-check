@@ -442,6 +442,7 @@
       <div class="q-desc">運営形態によって、必要となるサポートやご契約の形が変わります。<strong>住宅宿泊事業法（民泊新法）</strong>では、ホスト様が住宅宿泊管理業の登録をお持ちでない場合、弊社との<strong>住宅宿泊管理業者契約</strong>が必要です。</div>
       <div class="opts">
         <button class="opt" data-v="ryokan"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">旅館業（簡易宿所など）<small>→ チェックインの進め方をうかがいます</small></span></button>
+        <button class="opt" data-v="tokku"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">特区民泊<small>→ チェックインの進め方をうかがいます</small></span></button>
         <button class="opt" data-v="minpaku"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">住宅宿泊事業法（民泊新法）<small>→ 管理業者契約が必要です</small></span></button>
         <button class="opt" data-v="undecided"><span class="ic neutral"><i class="fa-solid fa-check"></i></span><span class="txt">まだ決めていない・わからない<small>→ 無料相談でご一緒に確認します</small></span></button>
       </div>
@@ -457,7 +458,7 @@
         <div class="q-num">チェックイン<span class="cat-pill">無人運営</span></div>
         <div class="q-title">チェックインの自動化を、弊社にお任せしたいですか？</div>
         <div class="q-desc">無人運営には、ゲストがQRコードでチェックインできる仕組み、スマートロックとの連携、<strong>宿泊者名簿の管理</strong>などが必要です。弊社の<strong>チェックインシステム</strong>を使えば、これらをまとめて自動化できます。</div>
-        <div class="q-note">※ <strong>旅館業の場合</strong>、すでにご自身でチェックインの仕組みをお持ちであれば、プラン契約なしで必要なオプションだけをご利用いただくこともできます。<br>※ <strong>住宅宿泊事業法（民泊新法）</strong>では、自前のチェックインシステムをご利用の場合でも、弊社との<strong>住宅宿泊管理業者契約</strong>が必要なため、基本プラン以上のご契約をお願いしております。</div>
+        <div class="q-note">※ <strong>旅館業・特区民泊の場合</strong>、すでにご自身でチェックインの仕組みをお持ちであれば、プラン契約なしで必要なオプションだけをご利用いただくこともできます。<br>※ <strong>住宅宿泊事業法（民泊新法）</strong>では、自前のチェックインシステムをご利用の場合でも、弊社との<strong>住宅宿泊管理業者契約</strong>が必要なため、基本プラン以上のご契約をお願いしております。</div>
         <div class="opts">
           <button class="opt" data-v="no"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で仕組みを用意できる／もうある<small>→ 必要なサポートだけご案内します</small></span></button>
           <button class="opt" data-v="yes"><span class="ic no"><i class="fa-solid fa-xmark"></i></span><span class="txt">お任せしたい<small>→ プラン診断にすすみます</small></span></button>
@@ -690,7 +691,7 @@ document.querySelectorAll('[data-form-q]').forEach(qEl=>{
       checkinBlock().querySelectorAll('.opt.sel').forEach(b=>b.classList.remove('sel'));
       opsBlock().querySelectorAll('.opt.sel').forEach(b=>b.classList.remove('sel'));
 
-      if(formType==='ryokan' || formType==='minpaku' || formType==='undecided'){
+      if(formType==='ryokan' || formType==='tokku' || formType==='minpaku' || formType==='undecided'){
         // すべての営業形態でチェックイン質問を表示
         // （チェックインシステム自体は営業形態に関わらず独立して選択可能）
         checkinBlock().style.display='block';
@@ -916,8 +917,8 @@ function buildResult(){
   if(!allYes){
     // 運営を1つでも任せたい → スタンダード（チェックインシステムも含まれる）
     planKey = 'standard';
-  }else if(formType==='ryokan' && baseNeeded==='no'){
-    // 旅館業 + チェックイン自前 + 運営すべて自分 → プランなし
+  }else if((formType==='ryokan' || formType==='tokku') && baseNeeded==='no'){
+    // 旅館業・特区民泊 + チェックイン自前 + 運営すべて自分 → プランなし
     planKey = 'none';
   }else if(formType==='minpaku'){
     // 民泊新法：管理業者契約必須のため基本プラン以上
@@ -928,7 +929,7 @@ function buildResult(){
     planKey = 'basic';
     planNote = '営業形態が未確定のため、現時点では<strong>基本プラン</strong>でご案内しています。旅館業に確定し、チェックイン・運営ともにご自身で行う場合は、プラン契約なしも選択可能です。';
   }else{
-    // 旅館業 + チェックインお任せ + 運営すべて自分 → 基本プラン
+    // 旅館業・特区民泊 + チェックインお任せ + 運営すべて自分 → 基本プラン
     planKey = 'basic';
   }
 
@@ -1124,7 +1125,7 @@ const N8N_WEBHOOK_URL = 'https://bizpato.app.n8n.cloud/webhook/minpaku-plan-chec
 // ▲▲▲ ここまで ▲▲▲
 
 // ラベル変換マップ
-const FORM_LABEL = { ryokan:'旅館業（簡易宿所など）', minpaku:'住宅宿泊事業法（民泊新法）', undecided:'まだ決めていない・わからない' };
+const FORM_LABEL = { ryokan:'旅館業（簡易宿所など）', tokku:'特区民泊', minpaku:'住宅宿泊事業法（民泊新法）', undecided:'まだ決めていない・わからない' };
 const BASE_LABEL = { yes:'弊社にお任せ', no:'自分で用意する／もうある' };
 const PLANQ_LABEL = ['ゲスト対応','清掃のやりとり','口コミ対応'];
 const PLANQ_ANS = { yes:'自分でできる', no:'弊社に任せたい' };
