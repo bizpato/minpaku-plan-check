@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>民泊管理バンク｜撮影料金かんたんシミュレーター</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+  #photoEstimateApp{
+    --navy:#1a2e4a;
+    --red:#ea4d3c;
+    --sky:#d7f0ff;
+    --sky-light:#e0f2fe;
+    --yellow:#fff050;
+    --bg:#f8f9fb;
+    --white:#ffffff;
+    --text:#4b5563;
+    --mid:#6b7280;
+    --light:#9ca3af;
+    --line:#e5e7eb;
+    --green:#3d9970;
+    --amber:#c98a26;
+    font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.9;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+  }
+  #photoEstimateApp *{margin:0;padding:0;box-sizing:border-box;}
+  #photoEstimateApp html{scroll-behavior:smooth;}
+  #photoEstimateApp .pe-wrap{padding:0 18px;position:relative;z-index:10;}
+  /* ===== Header ===== */
+  #photoEstimateApp .pe-header{
+    position:relative;
+    background:var(--bg);
+    padding:60px 0 30px;
+    text-align:center;
+    overflow:hidden;
+  }
+  #photoEstimateApp .pe-header .circle-deco{
+    position:absolute;width:500px;height:500px;border-radius:50%;
+    background:var(--sky);opacity:.35;top:-230px;right:-160px;z-index:1;
+  }
+  #photoEstimateApp .pe-header .circle-deco.small{
+    width:200px;height:200px;top:auto;bottom:-120px;left:-90px;right:auto;opacity:.28;
+  }
+  #photoEstimateApp .pe-header .eyebrow{
+    position:relative;z-index:10;
+    font-size:13px;letter-spacing:.28em;color:var(--light);
+    font-weight:400;margin-bottom:20px;
+  }
+  #photoEstimateApp .pe-header h1{
+    position:relative;z-index:10;
+    font-size:38px;font-weight:900;line-height:1.35;letter-spacing:.01em;
+    color:var(--navy);
+  }
+  #photoEstimateApp .pe-header .divider{
+    width:48px;height:2px;background:var(--light);margin:22px auto 20px;
+    position:relative;z-index:10;
+  }
+  #photoEstimateApp .pe-header p.lead{
+    position:relative;z-index:10;
+    font-size:17px;color:var(--text);font-weight:400;line-height:1.85;
+  }
+  /* ===== Progress ===== */
+  #photoEstimateApp .pe-progress{
+    position:sticky;top:0;z-index:30;
+    background:rgba(248,249,251,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:16px 0;
+  }
+  #photoEstimateApp .bar-track{height:5px;background:var(--line);border-radius:99px;overflow:hidden;}
+  #photoEstimateApp .bar-fill{
+    height:100%;width:0%;background:var(--navy);border-radius:99px;
+    transition:width .5s cubic-bezier(.4,0,.2,1);
+  }
+  #photoEstimateApp .labels{
+    display:flex;justify-content:space-between;margin-top:10px;
+    font-size:12px;color:var(--light);font-weight:400;letter-spacing:.04em;
+  }
+  #photoEstimateApp .labels span.on{color:var(--navy);font-weight:700;}
+  /* ===== Steps ===== */
+  #photoEstimateApp .pe-main{padding:40px 0 80px;}
+  #photoEstimateApp .step{display:none;}
+  #photoEstimateApp .step.active{display:block;animation:peFade .5s ease;}
+  @keyframes peFade{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+  #photoEstimateApp .step-head{margin-bottom:14px;text-align:center;}
+  #photoEstimateApp .step-tag{
+    display:inline-block;color:var(--mid);
+    font-size:13px;font-weight:700;letter-spacing:.16em;margin-bottom:18px;
+  }
+  #photoEstimateApp .step-icon{
+    width:80px;height:80px;border-radius:50%;background:var(--sky-light);
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;color:var(--navy);margin:0 auto 22px;
+  }
+  #photoEstimateApp .step-title{
+    font-size:30px;font-weight:700;margin-bottom:14px;line-height:1.4;color:var(--navy);
+  }
+  #photoEstimateApp .step-sub{font-size:16px;color:var(--mid);margin-bottom:40px;line-height:1.85;}
+  /* ===== Question card ===== */
+  #photoEstimateApp .q{
+    background:var(--white);border:1px solid var(--line);border-radius:20px;
+    padding:38px 34px;margin-bottom:24px;
+  }
+  #photoEstimateApp .q-num{
+    font-size:13px;font-weight:700;color:var(--mid);letter-spacing:.1em;
+    margin-bottom:14px;
+  }
+  #photoEstimateApp .q-num .cat-pill{
+    display:inline-block;background:var(--sky-light);color:var(--navy);
+    padding:3px 12px;border-radius:99px;margin-left:8px;font-size:12px;letter-spacing:.04em;
+  }
+  #photoEstimateApp .q-num .price-pill{
+    display:inline-block;background:#fdeceb;color:var(--red);
+    padding:3px 12px;border-radius:99px;margin-left:8px;font-size:12px;font-weight:700;letter-spacing:.02em;
+  }
+  #photoEstimateApp .q-title{font-size:22px;font-weight:700;line-height:1.55;margin-bottom:16px;color:var(--navy);}
+  #photoEstimateApp .q-desc{font-size:16px;color:var(--text);margin-bottom:14px;line-height:1.9;}
+  #photoEstimateApp .q-desc strong{color:var(--navy);font-weight:700;}
+  #photoEstimateApp .q-note{
+    font-size:14px;color:var(--mid);background:var(--bg);
+    border-radius:12px;padding:14px 18px;margin-bottom:26px;
+    border-left:3px solid var(--sky);line-height:1.8;
+  }
+  #photoEstimateApp .q-note strong{color:var(--navy);font-weight:700;}
+  #photoEstimateApp .ops-intro{
+    display:flex;align-items:center;gap:16px;margin:34px 0 24px;
+  }
+  #photoEstimateApp .ops-intro .ops-intro-line{flex:1;height:1px;background:var(--line);}
+  #photoEstimateApp .ops-intro span{font-size:14px;color:var(--mid);font-weight:700;letter-spacing:.04em;white-space:nowrap;}
+  #photoEstimateApp .opts{display:flex;flex-direction:column;gap:13px;}
+  #photoEstimateApp .opt{
+    display:flex;align-items:center;gap:16px;
+    border:2px solid var(--line);border-radius:14px;
+    padding:18px 20px;cursor:pointer;background:var(--white);
+    transition:all .2s ease;text-align:left;width:100%;font-family:inherit;
+  }
+  #photoEstimateApp .opt:hover{border-color:#c5d2e0;background:#fcfdff;}
+  #photoEstimateApp .opt .ic{
+    flex-shrink:0;width:26px;height:26px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:var(--white);
+    border:2px solid var(--line);background:var(--white);
+    transition:all .2s ease;
+  }
+  #photoEstimateApp .opt .ic.neutral .fa-solid{opacity:0;transition:opacity .15s;}
+  #photoEstimateApp .opt.sel .ic.neutral{background:var(--navy);border-color:var(--navy);}
+  #photoEstimateApp .opt.sel .ic.neutral .fa-solid{opacity:1;}
+  #photoEstimateApp .opt .ic.yes{border-color:var(--green);color:var(--green);}
+  #photoEstimateApp .opt.sel .ic.yes{background:var(--green);border-color:var(--green);color:var(--white);}
+  #photoEstimateApp .opt .ic.no{border-color:var(--red);color:var(--red);}
+  #photoEstimateApp .opt.sel .ic.no{background:var(--red);border-color:var(--red);color:var(--white);}
+  #photoEstimateApp .opt .txt{flex:1;font-size:16px;font-weight:400;line-height:1.55;color:var(--navy);}
+  #photoEstimateApp .opt .txt small{display:block;font-size:13px;color:var(--mid);font-weight:400;margin-top:3px;}
+  #photoEstimateApp .opt.sel{border-color:var(--navy);background:var(--sky-light);}
+  #photoEstimateApp .opt-price{
+    font-size:14px;color:var(--mid);text-align:right;margin-top:16px;
+  }
+  #photoEstimateApp .opt-price strong{color:var(--navy);font-weight:700;}
+  /* ===== Size input ===== */
+  #photoEstimateApp .size-input-wrap{
+    display:flex;align-items:center;gap:12px;max-width:260px;margin:16px 0 8px;
+  }
+  #photoEstimateApp .size-input-wrap input{
+    flex:1;padding:14px 16px;border:2px solid var(--line);border-radius:12px;
+    font-size:18px;font-family:inherit;color:var(--navy);background:var(--white);
+    font-weight:700;text-align:right;transition:border-color .2s;
+  }
+  #photoEstimateApp .size-input-wrap input:focus{outline:none;border-color:var(--navy);}
+  #photoEstimateApp .size-input-wrap .unit{font-size:18px;color:var(--navy);font-weight:700;}
+  /* ===== Nav ===== */
+  #photoEstimateApp .nav{display:flex;gap:14px;margin-top:34px;}
+  #photoEstimateApp .btn{
+    flex:1;padding:18px;border-radius:14px;font-size:16px;font-weight:700;
+    cursor:pointer;border:none;font-family:inherit;transition:all .2s;letter-spacing:.02em;
+  }
+  #photoEstimateApp .btn-primary{background:var(--navy);color:var(--white);}
+  #photoEstimateApp .btn-primary:hover{background:#24405f;}
+  #photoEstimateApp .btn-primary:disabled{background:#aeb9c7;cursor:not-allowed;}
+  #photoEstimateApp .btn-ghost{background:var(--white);color:var(--navy);border:2px solid var(--line);flex:0 0 120px;}
+  #photoEstimateApp .btn-ghost:hover{border-color:#c5d2e0;}
+  /* ===== Result ===== */
+  #photoEstimateApp .result-hero{
+    position:relative;overflow:hidden;
+    background:var(--navy);color:var(--white);border-radius:24px;
+    padding:48px 36px;text-align:center;margin-bottom:24px;
+  }
+  #photoEstimateApp .result-hero .circle-deco{
+    position:absolute;width:340px;height:340px;border-radius:50%;
+    background:#ffffff;opacity:.06;top:-150px;right:-120px;
+  }
+  #photoEstimateApp .result-hero .label{position:relative;z-index:2;font-size:14px;color:var(--sky);letter-spacing:.16em;margin-bottom:14px;}
+  #photoEstimateApp .result-hero .total-main{position:relative;z-index:2;font-size:46px;font-weight:900;letter-spacing:.01em;line-height:1.2;}
+  #photoEstimateApp .result-hero .total-main .unit-s{font-size:22px;margin-left:4px;}
+  #photoEstimateApp .result-hero .total-sub{position:relative;z-index:2;font-size:15px;color:#c9d6e8;margin-top:10px;font-weight:400;}
+  #photoEstimateApp .result-hero .plan-tag{
+    position:relative;z-index:2;
+    display:inline-block;margin-top:20px;background:var(--red);
+    font-size:13px;font-weight:700;padding:8px 20px;border-radius:99px;letter-spacing:.02em;
+  }
+  #photoEstimateApp .result-hero.custom .total-main{font-size:30px;}
+  #photoEstimateApp .card{
+    background:var(--white);border:1px solid var(--line);border-radius:20px;
+    padding:32px;margin-bottom:22px;
+  }
+  #photoEstimateApp .card h3{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--navy);display:flex;align-items:center;gap:12px;}
+  #photoEstimateApp .card h3 .h-ic{
+    width:42px;height:42px;border-radius:50%;background:var(--sky-light);
+    display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--navy);flex-shrink:0;
+  }
+  #photoEstimateApp .card .h-sub{font-size:14px;color:var(--mid);margin-bottom:18px;padding-left:54px;}
+  #photoEstimateApp .inc-row{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+    padding:15px 0;border-bottom:1px solid var(--line);font-size:16px;
+  }
+  #photoEstimateApp .inc-row:last-child{border-bottom:none;}
+  #photoEstimateApp .inc-row .name{font-weight:400;color:var(--navy);}
+  #photoEstimateApp .inc-row .name small{display:block;font-size:13px;color:var(--mid);font-weight:400;margin-top:2px;}
+  #photoEstimateApp .inc-row .val{color:var(--navy);font-weight:700;white-space:nowrap;}
+  #photoEstimateApp .inc-row.base .val{color:var(--navy);}
+  #photoEstimateApp .inc-row.extra .val{color:var(--red);}
+  #photoEstimateApp .inc-row.subtotal{border-top:2px solid var(--navy);margin-top:10px;padding-top:16px;font-weight:700;font-size:17px;}
+  #photoEstimateApp .inc-row.subtotal .val{color:var(--red);font-weight:900;font-size:19px;}
+  #photoEstimateApp .inc-row.tax{color:var(--mid);font-size:14px;padding:8px 0;}
+  #photoEstimateApp .inc-row.tax .val{color:var(--mid);font-weight:400;}
+  #photoEstimateApp .inc-row.total{border-top:1px solid var(--line);margin-top:8px;padding-top:14px;font-weight:700;font-size:18px;}
+  #photoEstimateApp .inc-row.total .val{color:var(--red);font-weight:900;font-size:22px;}
+  #photoEstimateApp .delivery-note{
+    background:var(--sky-light);border-radius:12px;padding:16px 20px;margin-top:18px;
+    font-size:14px;color:var(--navy);line-height:1.8;
+  }
+  #photoEstimateApp .delivery-note strong{font-weight:700;}
+  #photoEstimateApp .notice-list{
+    font-size:13px;color:var(--mid);line-height:1.9;margin-top:20px;
+  }
+  #photoEstimateApp .notice-list li{margin-left:1.2em;list-style:'※ ';}
+  /* ===== CTA / Form ===== */
+  #photoEstimateApp .cta-final{
+    background:var(--white);border:1px solid var(--line);border-radius:24px;
+    padding:44px 32px;text-align:center;margin-bottom:22px;
+  }
+  #photoEstimateApp .cta-final h3{font-size:24px;font-weight:700;margin-bottom:12px;color:var(--navy);}
+  #photoEstimateApp .cta-final p{font-size:15px;color:var(--mid);margin-bottom:28px;line-height:1.85;}
+  #photoEstimateApp .send-form{text-align:left;max-width:420px;margin:0 auto;}
+  #photoEstimateApp .form-row{display:flex;gap:14px;}
+  #photoEstimateApp .form-field{flex:1;margin-bottom:18px;}
+  #photoEstimateApp .form-field label{
+    display:block;font-size:14px;font-weight:700;color:var(--navy);
+    margin-bottom:8px;letter-spacing:.02em;
+  }
+  #photoEstimateApp .form-field .req{
+    display:inline-block;background:#fdeceb;color:var(--red);
+    font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px;
+  }
+  #photoEstimateApp .form-field input{
+    width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:12px;
+    font-size:16px;font-family:inherit;color:var(--navy);background:var(--bg);
+    transition:border-color .2s;box-sizing:border-box;
+  }
+  #photoEstimateApp .form-field input:focus{outline:none;border-color:var(--navy);background:var(--white);}
+  #photoEstimateApp .form-field input.err{border-color:var(--red);}
+  #photoEstimateApp .form-error{
+    color:var(--red);font-size:13px;margin-bottom:14px;min-height:18px;line-height:1.6;
+  }
+  #photoEstimateApp .send-btn{
+    width:100%;background:var(--red);color:var(--white);
+    font-size:17px;font-weight:700;padding:18px;border-radius:99px;border:none;
+    cursor:pointer;transition:transform .18s,opacity .2s;letter-spacing:.03em;font-family:inherit;
+  }
+  #photoEstimateApp .send-btn:hover{transform:translateY(-2px);}
+  #photoEstimateApp .send-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+  #photoEstimateApp .send-status{
+    text-align:center;font-size:14px;margin-top:16px;line-height:1.7;min-height:20px;
+  }
+  #photoEstimateApp .send-status.success{color:var(--green);font-weight:700;}
+  #photoEstimateApp .send-status.error{color:var(--red);}
+  #photoEstimateApp .post-send{
+    margin-top:26px;padding:28px 24px;background:var(--sky-light);
+    border-radius:16px;text-align:center;animation:peFade .4s ease;
+  }
+  #photoEstimateApp .post-send .post-send-tag{
+    display:inline-block;font-size:11px;font-weight:700;color:var(--navy);
+    background:var(--white);padding:5px 14px;border-radius:99px;
+    letter-spacing:.12em;margin-bottom:14px;
+  }
+  #photoEstimateApp .post-send h4{
+    font-size:18px;font-weight:700;color:var(--navy);margin-bottom:10px;line-height:1.55;
+  }
+  #photoEstimateApp .post-send p{
+    font-size:14px;color:var(--text);line-height:1.85;margin-bottom:20px;
+  }
+  #photoEstimateApp .post-send p strong{color:var(--navy);font-weight:700;}
+  /* ===== PDF ===== */
+  #photoEstimateApp .pdf-save-card{
+    text-align:center;
+    margin:8px 0 28px;
+    padding:0;
+    background:transparent;
+  }
+  #photoEstimateApp .pdf-save-card .pdf-note{
+    font-size:12px;color:var(--mid);
+    margin-top:12px;line-height:1.7;
+  }
+  #photoEstimateApp .btn-pdf{
+    background:var(--white);color:var(--navy);
+    border:2px solid var(--navy);
+    font-size:14px;font-weight:700;
+    padding:12px 32px;border-radius:99px;
+    cursor:pointer;font-family:inherit;
+    transition:all .2s;letter-spacing:.02em;
+  }
+  #photoEstimateApp .btn-pdf:hover{background:var(--navy);color:var(--white);}
+  #photoEstimateApp .btn-pdf:disabled{opacity:.5;cursor:not-allowed;}
+  #photoEstimateApp .btn-pdf i{margin-right:8px;}
+  /* ===== Policy ===== */
+  #photoEstimateApp .policy-card{
+    background:#fffae6;border-radius:20px;padding:28px 32px;margin-bottom:22px;
+  }
+  #photoEstimateApp .policy-card h4{
+    font-size:16px;font-weight:700;color:var(--navy);margin-bottom:12px;
+    display:flex;align-items:center;gap:10px;
+  }
+  #photoEstimateApp .policy-card h4 i{color:var(--amber);font-size:16px;}
+  #photoEstimateApp .policy-card p{
+    font-size:14px;color:var(--navy);line-height:1.9;
+  }
+  #photoEstimateApp .retry{text-align:center;margin-top:26px;}
+  #photoEstimateApp .retry button{
+    background:none;border:none;color:var(--mid);font-size:14px;
+    text-decoration:underline;cursor:pointer;font-family:inherit;
+  }
+  #photoEstimateApp .footer-brand{
+    text-align:center;font-size:12px;font-weight:400;
+    color:var(--light);letter-spacing:.25em;margin-top:48px;padding-bottom:10px;
+  }
+  #photoEstimateApp .disclaimer{
+    font-size:12px;color:var(--light);text-align:center;
+    margin-top:18px;line-height:1.8;
+  }
+  @media(max-width:520px){
+    #photoEstimateApp .pe-wrap{padding:0 14px;}
+    #photoEstimateApp .pe-header .eyebrow{font-size:11px;letter-spacing:.14em;}
+    #photoEstimateApp .pe-header h1{font-size:28px;}
+    #photoEstimateApp .pe-header{padding:44px 0 24px;}
+    #photoEstimateApp .step-title{font-size:24px;}
+    #photoEstimateApp .step-icon{width:66px;height:66px;font-size:28px;}
+    #photoEstimateApp .q{padding:28px 22px;}
+    #photoEstimateApp .q-title{font-size:19px;}
+    #photoEstimateApp .result-hero .total-main{font-size:34px;}
+    #photoEstimateApp .result-hero{padding:38px 26px;}
+    #photoEstimateApp .card,#photoEstimateApp .policy-card{padding:24px;}
+    #photoEstimateApp .btn-ghost{flex:0 0 96px;}
+    #photoEstimateApp .cta-final{padding:34px 24px;}
+    #photoEstimateApp .labels{font-size:11px;}
+    #photoEstimateApp .footer-brand{font-size:10px;letter-spacing:.16em;}
+  }
+</style>
+</head>
+<body>
+<div id="photoEstimateApp">
+<header class="pe-header">
+  <div class="circle-deco"></div>
+  <div class="circle-deco small"></div>
+  <div class="pe-wrap">
+    <div class="eyebrow">B I Z P A T O　P H O T O G R A P H Y</div>
+    <h1>撮影料金<br>かんたんシミュレーター</h1>
+    <div class="divider"></div>
+    <p class="lead">物件情報と撮影内容を選ぶだけで、<br>概算のお見積りをその場で確認できます。<br>所要時間は約2分です。</p>
+  </div>
+</header>
+
+<div class="pe-progress">
+  <div class="pe-wrap">
+    <div class="bar-track"><div class="bar-fill" id="peBarFill"></div></div>
+    <div class="labels">
+      <span id="peLbl1" class="on">物件・撮影内容</span>
+      <span id="peLbl2">見積もり結果</span>
+    </div>
+  </div>
+</div>
+
+<main class="pe-main">
+<div class="pe-wrap">
+  <!-- ============ STEP 1 ============ -->
+  <section class="step active" id="peStep1">
+    <div class="step-head">
+      <span class="step-tag">STEP 1 / 2</span>
+      <div class="step-icon"><i class="fa-solid fa-camera"></i></div>
+      <h2 class="step-title">物件情報と撮影内容をお聞かせください</h2>
+      <p class="step-sub">料金区分を自動で判定し、ご希望の撮影内容を加算します。</p>
+    </div>
+
+    <!-- 間取り -->
+    <div class="q">
+      <div class="q-num">質問 1 / 2<span class="cat-pill">物件情報</span></div>
+      <div class="q-title">物件の間取りを選んでください</div>
+      <div class="q-desc">お部屋の間取りで基本料金区分を判定します。</div>
+      <div class="opts" id="peRoomTypes"></div>
+    </div>
+
+    <!-- 面積 -->
+    <div class="q">
+      <div class="q-num">質問 2 / 2<span class="cat-pill">物件情報</span></div>
+      <div class="q-title">室内面積をご入力ください</div>
+      <div class="q-desc">だいたいの㎡数で結構です。例：45㎡の1LDKなら「45」とご入力ください。</div>
+      <div class="size-input-wrap">
+        <input type="number" id="peRoomSize" placeholder="例：45" min="0" step="1" inputmode="numeric">
+        <span class="unit">㎡</span>
+      </div>
+      <div class="q-note">※ 間取りと面積のうち、<strong>高い料金区分</strong>を自動で適用します。例：70㎡の1LDKは2LDK区分の料金になります。</div>
+    </div>
+
+    <!-- 撮影内容ABCD -->
+    <div class="ops-intro">
+      <div class="ops-intro-line"></div>
+      <span>撮影内容を選んでいただきます</span>
+      <div class="ops-intro-line"></div>
+    </div>
+
+    <div id="peCamOptions"></div>
+
+    <!-- 追加撮影 -->
+    <div class="ops-intro">
+      <div class="ops-intro-line"></div>
+      <span>追加の撮影（オプション）</span>
+      <div class="ops-intro-line"></div>
+    </div>
+
+    <div id="peExtraOptions"></div>
+
+    <div class="nav">
+      <button class="btn btn-primary" id="peToResult" disabled>見積もり結果をみる</button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 2: RESULT ============ -->
+  <section class="step" id="peStepResult">
+    <div class="result-hero" id="peResultHero">
+      <div class="circle-deco"></div>
+      <div class="label">お見積り合計（税抜）</div>
+      <div class="total-main" id="peResultTotal">―</div>
+      <div class="total-sub" id="peResultSub">―</div>
+      <div class="plan-tag" id="peResultTag" style="display:none;">―</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="h-ic"><i class="fa-solid fa-list-check"></i></span>見積もりの内訳</h3>
+      <div id="peResultBreakdown"></div>
+      <div class="delivery-note" id="peDeliveryNote" style="display:none;">
+        <strong>納品の目安</strong><br>
+        空間・備品写真：撮影後7〜10営業日 ／ ガイド写真・動画：撮影後3営業日以内
+      </div>
+      <ul class="notice-list" id="peNoticeList"></ul>
+    </div>
+
+    <div class="cta-final">
+      <h3>見積もり内容を送る</h3>
+      <p>お名前・物件名・メールアドレスをご入力のうえ送信ください。<br>送信後、専門スタッフが詳細な正式見積りをご案内します。</p>
+      <div class="send-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="peLastName">姓 <span class="req">必須</span></label>
+            <input type="text" id="peLastName" placeholder="山田" autocomplete="family-name">
+          </div>
+          <div class="form-field">
+            <label for="peFirstName">名 <span class="req">必須</span></label>
+            <input type="text" id="peFirstName" placeholder="太郎" autocomplete="given-name">
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="pePropertyName">物件名 <span class="req">必須</span></label>
+          <input type="text" id="pePropertyName" placeholder="例：LULLA鎌倉">
+        </div>
+        <div class="form-field">
+          <label for="peEmail">メールアドレス <span class="req">必須</span></label>
+          <input type="email" id="peEmail" placeholder="example@email.com" autocomplete="email">
+        </div>
+        <div class="form-error" id="peFormError"></div>
+        <button class="send-btn" id="peSendBtn">見積もり内容を送信する</button>
+        <div class="send-status" id="peSendStatus"></div>
+        <div class="post-send" id="pePostSend" style="display:none;">
+          <div class="post-send-tag">THANK YOU</div>
+          <h4>送信を受け付けました</h4>
+          <p>内容を確認のうえ、<strong>弊社スタッフより正式なお見積りと撮影可能日</strong>をメールにてご連絡いたします。<br>通常1〜2営業日以内にご返信いたします。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-save-card" id="pePdfSaveCard" style="display:none;">
+      <button class="btn-pdf" id="peDownloadPdfBtn"><i class="fa-solid fa-download"></i>見積もりをPDFで保存する</button>
+      <p class="pdf-note">送信内容の控えとしていつでもダウンロードできます</p>
+    </div>
+
+    <div class="policy-card">
+      <h4><i class="fa-solid fa-circle-info"></i>キャンセル・日程変更について</h4>
+      <p>撮影予定日の<strong>10日前まで</strong>に弊社にご連絡ください。<br>返金が発生する場合、振込手数料はホスト様のご負担となります。</p>
+    </div>
+
+    <div class="retry">
+      <button id="peRetryBtn">もう一度試算する</button>
+    </div>
+
+    <p class="disclaimer">
+      ※ 本シミュレーションの金額はあくまで概算（税抜表記）です。正式なお見積りは、撮影条件・担当者・移動経路の確認のうえ確定いたします。<br>
+      ※ 交通費・出張費・宿泊費は上記金額に含まれておりません。別途お見積りいたします。<br>
+      ※ ドローン撮影は飛行可否・天候により実施できない場合があります。
+    </p>
+  </section>
+
+  <div class="footer-brand">BIZPATO PHOTOGRAPHY | 株式会社BizPato</div>
+</div>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ===== Data =====
+const ROOM_PRICES = [
+  { key:'1R-1K',       label:'1R・1K',          sizeLabel:'30㎡以下',       sizeMax:30,     price:50000,  cuts:20 },
+  { key:'1DK-1LDK',    label:'1DK・1LDK',       sizeLabel:'30㎡超〜50㎡',   sizeMax:50,     price:65000,  cuts:25 },
+  { key:'2K-2DK-2LDK', label:'2K・2DK・2LDK',   sizeLabel:'50㎡超〜80㎡',   sizeMax:80,     price:90000,  cuts:30 },
+  { key:'3K-3DK-3LDK', label:'3K・3DK・3LDK',   sizeLabel:'80㎡超〜110㎡',  sizeMax:110,    price:115000, cuts:35 },
+  { key:'4K-4DK-4LDK', label:'4K・4DK・4LDK',   sizeLabel:'110㎡超〜150㎡', sizeMax:150,    price:135000, cuts:40 },
+  { key:'5plus',       label:'5室以上・複数棟', sizeLabel:'150㎡超',        sizeMax:999999, price:null,   cuts:null, custom:true }
+];
+
+const CAM_OPTIONS = [
+  { id:'A', name:'備品・アメニティ写真', desc:'調理器具やアメニティなど。整列・基本補正込み。', price:20000 },
+  { id:'B', name:'ゲストガイド用写真',   desc:'家電の操作部や設置場所。ゲストへの案内に。',   price:25000 },
+  { id:'C', name:'社内引継ぎ動画',       desc:'収納内部・設備の位置を記録。無編集で納品。',   price:10000 },
+  { id:'D', name:'Booking認証用動画',   desc:'所在地確認用の連続動画。無編集で納品。',        price:10000 }
+];
+
+const EXTRA_OPTIONS = [
+  { id:'morning', name:'早朝撮影',    desc:'8:00前の撮影開始。前泊が必要な場合は宿泊費別途。',        price:20000 },
+  { id:'evening', name:'夕景・夜景',  desc:'同日撮影。5カット以上を追加納品。',                        price:30000 },
+  { id:'drone',   name:'ドローン写真', desc:'同日・1施設・静止画5カット以上。飛行可否・天候によります。', price:50000 }
+];
+
+// ===== State =====
+const state = {
+  roomType: null,
+  roomSize: null,
+  optA: null, optB: null, optC: null, optD: null,
+  optMorning: null, optEvening: null, optDrone: null,
+  lastResult: null
+};
+
+// ===== Webhook URL =====
+const N8N_WEBHOOK_URL = 'https://bizpato.app.n8n.cloud/webhook/photo-estimate';
+
+// ===== DOM helpers =====
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+
+// ===== Render: 間取り選択肢 =====
+function renderRoomTypes(){
+  const container = $('#peRoomTypes');
+  container.innerHTML = ROOM_PRICES.map(r => {
+    const priceLabel = r.custom
+      ? '個別見積'
+      : `${r.price.toLocaleString()}円`;
+    return `
+      <button class="opt" data-room="${r.key}" type="button">
+        <span class="ic neutral"><i class="fa-solid fa-check"></i></span>
+        <span class="txt">${r.label}<small>${r.sizeLabel} ／ 基本料金 ${priceLabel}（税抜）</small></span>
+      </button>
+    `;
+  }).join('');
+  container.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      state.roomType = btn.dataset.room;
+      checkStep1Done();
+    });
+  });
+}
+
+// ===== Render: 撮影内容ABCD =====
+function renderCamOptions(){
+  const container = $('#peCamOptions');
+  container.innerHTML = CAM_OPTIONS.map(op => `
+    <div class="q" data-cam-opt="${op.id}">
+      <div class="q-num">${op.id}<span class="cat-pill">撮影内容</span><span class="price-pill">+${op.price.toLocaleString()}円（税抜）</span></div>
+      <div class="q-title">${op.name}</div>
+      <div class="q-desc">${op.desc}</div>
+      <div class="opts">
+        <button class="opt" data-cam-val="self" type="button"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">自分で撮影する<small>→ 追加料金はかかりません</small></span></button>
+        <button class="opt" data-cam-val="request" type="button"><span class="ic no"><i class="fa-solid fa-camera-retro"></i></span><span class="txt">撮影を依頼する<small>→ +${op.price.toLocaleString()}円（税抜）</small></span></button>
+      </div>
+    </div>
+  `).join('');
+  container.querySelectorAll('[data-cam-opt]').forEach(card => {
+    const id = card.dataset.camOpt;
+    card.querySelectorAll('.opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        card.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+        state[`opt${id}`] = btn.dataset.camVal;
+        checkStep1Done();
+      });
+    });
+  });
+}
+
+// ===== Render: 追加撮影 =====
+function renderExtraOptions(){
+  const container = $('#peExtraOptions');
+  container.innerHTML = EXTRA_OPTIONS.map(op => `
+    <div class="q" data-extra-opt="${op.id}">
+      <div class="q-num"><span class="cat-pill">追加撮影</span><span class="price-pill">+${op.price.toLocaleString()}円（税抜）</span></div>
+      <div class="q-title">${op.name}</div>
+      <div class="q-desc">${op.desc}</div>
+      <div class="opts">
+        <button class="opt" data-extra-val="no" type="button"><span class="ic yes"><i class="fa-solid fa-check"></i></span><span class="txt">必要なし<small>→ 追加料金はかかりません</small></span></button>
+        <button class="opt" data-extra-val="yes" type="button"><span class="ic no"><i class="fa-solid fa-plus"></i></span><span class="txt">追加する<small>→ +${op.price.toLocaleString()}円（税抜）</small></span></button>
+      </div>
+    </div>
+  `).join('');
+  container.querySelectorAll('[data-extra-opt]').forEach(card => {
+    const id = card.dataset.extraOpt;
+    const stateKey = `opt${id.charAt(0).toUpperCase() + id.slice(1)}`;
+    card.querySelectorAll('.opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        card.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+        state[stateKey] = btn.dataset.extraVal;
+        checkStep1Done();
+      });
+    });
+  });
+}
+
+// ===== 面積入力 =====
+$('#peRoomSize').addEventListener('input', (e) => {
+  const v = parseFloat(e.target.value);
+  state.roomSize = (isNaN(v) || v < 0) ? null : v;
+  checkStep1Done();
+});
+
+// ===== STEP1 完了判定 =====
+function checkStep1Done(){
+  const camDone = CAM_OPTIONS.every(op => state[`opt${op.id}`] !== null);
+  const extraDone = EXTRA_OPTIONS.every(op => {
+    const k = `opt${op.id.charAt(0).toUpperCase() + op.id.slice(1)}`;
+    return state[k] !== null;
+  });
+  const done = state.roomType && state.roomSize !== null && state.roomSize > 0 && camDone && extraDone;
+  $('#peToResult').disabled = !done;
+}
+
+// ===== 計算ロジック =====
+function calcEstimate(){
+  const baseByRoom = ROOM_PRICES.find(r => r.key === state.roomType);
+  if(!baseByRoom) return null;
+
+  let applied = baseByRoom;
+  let appliedBy = '間取り';
+  if(state.roomSize && !baseByRoom.custom){
+    const baseBySize = ROOM_PRICES.find(r => state.roomSize <= r.sizeMax);
+    if(baseBySize && !baseBySize.custom && (baseBySize.price || 0) > (applied.price || 0)){
+      applied = baseBySize;
+      appliedBy = '面積';
+    } else if(baseBySize && baseBySize.custom && state.roomSize > 150){
+      // 150㎡超なら custom
+      applied = baseBySize;
+      appliedBy = '面積';
+    }
+  }
+
+  if(applied.custom){
+    return {
+      custom: true,
+      roomTypeLabel: baseByRoom.label,
+      appliedLabel: applied.label,
+      appliedBy,
+      basePrice: null,
+      cuts: null,
+      items: [],
+      totalTaxExcluded: null,
+      estimatedTax: null,
+      totalTaxIncluded: null
+    };
+  }
+
+  const items = [];
+  let total = applied.price;
+
+  CAM_OPTIONS.forEach(o => {
+    if(state[`opt${o.id}`] === 'request'){
+      items.push({ name: o.name, price: o.price, category: '撮影内容', id: o.id });
+      total += o.price;
+    }
+  });
+
+  EXTRA_OPTIONS.forEach(o => {
+    const key = `opt${o.id.charAt(0).toUpperCase() + o.id.slice(1)}`;
+    if(state[key] === 'yes'){
+      items.push({ name: o.name, price: o.price, category: '追加撮影', id: o.id });
+      total += o.price;
+    }
+  });
+
+  return {
+    custom: false,
+    roomTypeLabel: baseByRoom.label,
+    appliedLabel: applied.label,
+    appliedBy,
+    basePrice: applied.price,
+    cuts: applied.cuts,
+    items,
+    totalTaxExcluded: total,
+    estimatedTax: Math.round(total * 0.1),
+    totalTaxIncluded: Math.round(total * 1.1)
+  };
+}
+
+// ===== 結果レンダリング =====
+function renderResult(){
+  const r = calcEstimate();
+  state.lastResult = r;
+  if(!r) return;
+
+  const hero = $('#peResultHero');
+  const totalEl = $('#peResultTotal');
+  const subEl = $('#peResultSub');
+  const tagEl = $('#peResultTag');
+  const breakdownEl = $('#peResultBreakdown');
+  const deliveryEl = $('#peDeliveryNote');
+  const noticeEl = $('#peNoticeList');
+
+  if(r.custom){
+    hero.classList.add('custom');
+    totalEl.innerHTML = '個別お見積り';
+    subEl.textContent = `${r.appliedLabel}（${state.roomSize}㎡）は個別見積となります`;
+    tagEl.style.display = 'inline-block';
+    tagEl.textContent = '詳細は無料相談でご案内します';
+    breakdownEl.innerHTML = `
+      <div class="inc-row">
+        <div class="name">物件規模<small>${r.appliedLabel}（${state.roomSize}㎡）</small></div>
+        <div class="val">個別見積</div>
+      </div>
+      <div class="inc-row" style="color:var(--mid);">
+        <div class="name" style="font-size:14px;line-height:1.8;">5室以上・複数棟、または150㎡を超える物件は、撮影カット数・所要時間が物件によって大きく変動するため、個別にお見積りいたします。無料相談にて詳細をうかがいます。</div>
+        <div class="val"></div>
+      </div>
+    `;
+    deliveryEl.style.display = 'none';
+    noticeEl.innerHTML = '';
+    return;
+  }
+
+  hero.classList.remove('custom');
+  totalEl.innerHTML = `${r.totalTaxExcluded.toLocaleString()}<span class="unit-s">円</span>`;
+  subEl.textContent = `税抜 ／ 税込目安 ${r.totalTaxIncluded.toLocaleString()}円`;
+  tagEl.style.display = 'none';
+
+  let html = '';
+  // 基本料金
+  html += `
+    <div class="inc-row base">
+      <div class="name">基本撮影料金<small>${r.appliedLabel}（最低${r.cuts}カット・${r.appliedBy}区分で判定）</small></div>
+      <div class="val">${r.basePrice.toLocaleString()}円</div>
+    </div>`;
+  // オプション
+  r.items.forEach(item => {
+    html += `
+      <div class="inc-row extra">
+        <div class="name">${item.name}<small>${item.category}</small></div>
+        <div class="val">+${item.price.toLocaleString()}円</div>
+      </div>`;
+  });
+  // 合計
+  html += `
+    <div class="inc-row subtotal">
+      <div class="name">小計（税抜）</div>
+      <div class="val">${r.totalTaxExcluded.toLocaleString()}円</div>
+    </div>
+    <div class="inc-row tax">
+      <div class="name">消費税（10%）</div>
+      <div class="val">${r.estimatedTax.toLocaleString()}円</div>
+    </div>
+    <div class="inc-row total">
+      <div class="name">合計（税込目安）</div>
+      <div class="val">${r.totalTaxIncluded.toLocaleString()}円</div>
+    </div>`;
+  breakdownEl.innerHTML = html;
+  deliveryEl.style.display = 'block';
+
+  // 注記
+  const notices = [];
+  notices.push('概算金額です。撮影条件・担当者・移動経路の確認後、正式なお見積りをご案内します。');
+  notices.push('交通費・出張費・宿泊費は上記金額に含まれません。別途お見積りいたします。');
+  if(r.items.some(i => i.id === 'drone')){
+    notices.push('ドローン写真は飛行可否・天候により実施できない場合があります。別途、飛行許可申請費用が発生する場合があります。');
+  }
+  if(r.items.some(i => i.id === 'morning')){
+    notices.push('早朝撮影で前泊が必要な場合、宿泊費が別途発生します。');
+  }
+  if(r.appliedBy === '面積'){
+    notices.push(`${r.roomTypeLabel}をお選びいただきましたが、面積が広いため${r.appliedLabel}の料金区分を適用しています。`);
+  }
+  noticeEl.innerHTML = notices.map(n => `<li>${n}</li>`).join('');
+}
+
+// ===== Navigation =====
+function showStep(id, stepNo){
+  $$('.step').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  const pct = stepNo === 1 ? 20 : 100;
+  $('#peBarFill').style.width = pct + '%';
+  ['peLbl1','peLbl2'].forEach((l,i) => {
+    document.getElementById(l).classList.toggle('on', i === (stepNo-1));
+  });
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+$('#peToResult').addEventListener('click', () => {
+  renderResult();
+  showStep('#peStepResult', 2);
+});
+
+$('#peRetryBtn').addEventListener('click', () => {
+  // 状態リセット
+  state.roomType = null;
+  state.roomSize = null;
+  CAM_OPTIONS.forEach(o => state[`opt${o.id}`] = null);
+  EXTRA_OPTIONS.forEach(o => {
+    const k = `opt${o.id.charAt(0).toUpperCase() + o.id.slice(1)}`;
+    state[k] = null;
+  });
+  state.lastResult = null;
+  // UIリセット
+  $$('.opt.sel').forEach(b => b.classList.remove('sel'));
+  $('#peRoomSize').value = '';
+  ['peLastName','peFirstName','pePropertyName','peEmail'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.value = ''; el.classList.remove('err'); }
+  });
+  const sb = $('#peSendBtn'); if(sb){ sb.disabled = false; sb.textContent = '見積もり内容を送信する'; }
+  const ss = $('#peSendStatus'); if(ss){ ss.className = 'send-status'; ss.textContent = ''; }
+  const fe = $('#peFormError'); if(fe){ fe.textContent = ''; }
+  const ps = $('#pePostSend'); if(ps){ ps.style.display = 'none'; }
+  const pc = $('#pePdfSaveCard'); if(pc){ pc.style.display = 'none'; }
+  $('#peToResult').disabled = true;
+  showStep('#peStep1', 1);
+});
+
+// ===== サマリーテキスト =====
+function buildSummaryText(){
+  const r = state.lastResult;
+  const L = [];
+  L.push('■ 物件情報');
+  const roomDef = ROOM_PRICES.find(x => x.key === state.roomType);
+  L.push('　間取り：' + (roomDef ? roomDef.label : '未選択'));
+  L.push('　室内面積：' + (state.roomSize ? state.roomSize + '㎡' : '未入力'));
+  if(r && !r.custom){
+    L.push('　適用区分：' + r.appliedLabel + '（' + r.appliedBy + '区分で判定）');
+  }
+  L.push('');
+  L.push('■ 撮影内容');
+  CAM_OPTIONS.forEach(op => {
+    const v = state[`opt${op.id}`];
+    const label = v === 'request' ? '撮影を依頼する' : (v === 'self' ? '自分で撮影する' : '未回答');
+    L.push('　' + op.id + ' ' + op.name + '：' + label);
+  });
+  L.push('');
+  L.push('■ 追加撮影');
+  EXTRA_OPTIONS.forEach(op => {
+    const k = `opt${op.id.charAt(0).toUpperCase() + op.id.slice(1)}`;
+    const v = state[k];
+    const label = v === 'yes' ? '追加する' : (v === 'no' ? '必要なし' : '未回答');
+    L.push('　' + op.name + '：' + label);
+  });
+  L.push('');
+  L.push('━━━━━━━━━━━━━━');
+  L.push('【概算お見積り】');
+  if(r && r.custom){
+    L.push('　個別お見積り（5室以上・複数棟、または150㎡超）');
+  }else if(r){
+    L.push('　基本撮影料金：' + r.basePrice.toLocaleString() + '円');
+    if(r.items.length > 0){
+      r.items.forEach(it => L.push('　＋ ' + it.name + '：' + it.price.toLocaleString() + '円'));
+    }
+    L.push('　─────────────');
+    L.push('　小計（税抜）：' + r.totalTaxExcluded.toLocaleString() + '円');
+    L.push('　消費税（10%）：' + r.estimatedTax.toLocaleString() + '円');
+    L.push('　合計（税込目安）：' + r.totalTaxIncluded.toLocaleString() + '円');
+    L.push('');
+    L.push('　※ 交通費・出張費は別途お見積りとなります');
+  }
+  L.push('━━━━━━━━━━━━━━');
+  return L.join('\n');
+}
+
+// ===== Webhookペイロード =====
+function buildPayload(lastName, firstName, propertyName, email){
+  const r = state.lastResult;
+  const roomDef = ROOM_PRICES.find(x => x.key === state.roomType);
+  const camOpts = {};
+  CAM_OPTIONS.forEach(op => {
+    const v = state[`opt${op.id}`];
+    camOpts[op.id + '_' + op.name] = v === 'request' ? '撮影を依頼する' : (v === 'self' ? '自分で撮影する' : '');
+  });
+  const extraOpts = {};
+  EXTRA_OPTIONS.forEach(op => {
+    const k = `opt${op.id.charAt(0).toUpperCase() + op.id.slice(1)}`;
+    const v = state[k];
+    extraOpts[op.name] = v === 'yes' ? '追加する' : (v === 'no' ? '必要なし' : '');
+  });
+  return {
+    timestamp: new Date().toISOString(),
+    source: 'photo-estimate',
+    contact: { lastName, firstName, propertyName, email },
+    property: {
+      roomType: roomDef ? roomDef.label : '',
+      roomSize: state.roomSize,
+      appliedLabel: r ? r.appliedLabel : '',
+      appliedBy: r ? r.appliedBy : ''
+    },
+    shoots: camOpts,
+    extras: extraOpts,
+    estimate: r && !r.custom ? {
+      basePrice: r.basePrice,
+      optionsTotal: r.items.reduce((s,i)=>s+i.price,0),
+      totalTaxExcluded: r.totalTaxExcluded,
+      estimatedTax: r.estimatedTax,
+      totalTaxIncluded: r.totalTaxIncluded,
+      cuts: r.cuts
+    } : {
+      custom: true,
+      note: '個別見積（5室以上・複数棟、または150㎡超）'
+    },
+    summaryText: buildSummaryText()
+  };
+}
+
+// ===== バリデーション =====
+function validateForm(){
+  const lastName = $('#peLastName').value.trim();
+  const firstName = $('#peFirstName').value.trim();
+  const propertyName = $('#pePropertyName').value.trim();
+  const email = $('#peEmail').value.trim();
+  const err = $('#peFormError');
+  ['peLastName','peFirstName','pePropertyName','peEmail'].forEach(id => document.getElementById(id).classList.remove('err'));
+  if(!lastName){ $('#peLastName').classList.add('err'); err.textContent = '姓を入力してください。'; return null; }
+  if(!firstName){ $('#peFirstName').classList.add('err'); err.textContent = '名を入力してください。'; return null; }
+  if(!propertyName){ $('#pePropertyName').classList.add('err'); err.textContent = '物件名を入力してください。'; return null; }
+  if(!email){ $('#peEmail').classList.add('err'); err.textContent = 'メールアドレスを入力してください。'; return null; }
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if(!emailOk){ $('#peEmail').classList.add('err'); err.textContent = 'メールアドレスの形式が正しくありません。'; return null; }
+  err.textContent = '';
+  return { lastName, firstName, propertyName, email };
+}
+
+// ===== 送信 =====
+$('#peSendBtn').addEventListener('click', async () => {
+  const valid = validateForm();
+  if(!valid) return;
+  const btn = $('#peSendBtn');
+  const status = $('#peSendStatus');
+  const payload = buildPayload(valid.lastName, valid.firstName, valid.propertyName, valid.email);
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  status.className = 'send-status';
+  status.textContent = '';
+  try{
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('status ' + res.status);
+    status.className = 'send-status success';
+    status.textContent = '送信が完了しました。';
+    btn.textContent = '送信済み';
+    const ps = $('#pePostSend');
+    if(ps){
+      ps.style.display = 'block';
+      setTimeout(() => ps.scrollIntoView({behavior:'smooth', block:'center'}), 200);
+    }
+    const pc = $('#pePdfSaveCard');
+    if(pc) pc.style.display = 'block';
+  }catch(e){
+    btn.disabled = false;
+    btn.textContent = '見積もり内容を送信する';
+    status.className = 'send-status error';
+    status.textContent = '送信に失敗しました。お手数ですが時間をおいて再度お試しください。';
+  }
+});
+
+// ===== PDF生成 =====
+function buildPDFContent(){
+  const lastName = $('#peLastName').value.trim();
+  const firstName = $('#peFirstName').value.trim();
+  const propertyName = $('#pePropertyName').value.trim();
+  const email = $('#peEmail').value.trim();
+  const customerName = (lastName || firstName) ? `${lastName} ${firstName} 様` : '（お客様情報未入力）';
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+  const r = state.lastResult;
+  const roomDef = ROOM_PRICES.find(x => x.key === state.roomType);
+
+  // 内訳テーブル
+  let breakdownRows = '';
+  if(r && !r.custom){
+    breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;font-weight:700;">基本撮影料金</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${r.appliedLabel}（最低${r.cuts}カット・${r.appliedBy}区分で判定）</div></td><td style="padding:12px 0;color:#1a2e4a;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">${r.basePrice.toLocaleString()}円</td></tr>`;
+    r.items.forEach(it => {
+      breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">${it.name}</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${it.category}</div></td><td style="padding:12px 0;color:#ea4d3c;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">+${it.price.toLocaleString()}円</td></tr>`;
+    });
+    breakdownRows += `<tr style="border-top:2px solid #1a2e4a;"><td style="padding:14px 0;color:#1a2e4a;font-weight:700;font-size:15px;">小計（税抜）</td><td style="padding:14px 0;color:#ea4d3c;font-weight:900;font-size:17px;text-align:right;">${r.totalTaxExcluded.toLocaleString()}円</td></tr>`;
+    breakdownRows += `<tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">消費税（10%）</td><td style="padding:8px 0;color:#6b7280;font-size:13px;text-align:right;">${r.estimatedTax.toLocaleString()}円</td></tr>`;
+    breakdownRows += `<tr style="border-top:1px solid #e5e7eb;"><td style="padding:12px 0;color:#1a2e4a;font-weight:700;font-size:15px;">合計（税込目安）</td><td style="padding:12px 0;color:#ea4d3c;font-weight:900;font-size:19px;text-align:right;">${r.totalTaxIncluded.toLocaleString()}円</td></tr>`;
+  }else if(r && r.custom){
+    breakdownRows += `<tr><td colspan="2" style="padding:14px 0;color:#1a2e4a;font-size:14px;line-height:1.8;">5室以上・複数棟、または150㎡を超える物件は、個別にお見積りいたします。詳細は無料相談にてご案内します。</td></tr>`;
+  }
+
+  // 撮影内容リスト
+  const camList = CAM_OPTIONS.map(op => {
+    const v = state[`opt${op.id}`];
+    const label = v === 'request' ? '撮影を依頼する' : (v === 'self' ? '自分で撮影する' : '―');
+    const color = v === 'request' ? '#ea4d3c' : (v === 'self' ? '#3d9970' : '#9ca3af');
+    return `<tr><td style="padding:6px 0;color:#1a2e4a;font-size:13px;">${op.id} ${op.name}</td><td style="padding:6px 0;color:${color};font-weight:700;font-size:13px;text-align:right;">${label}</td></tr>`;
+  }).join('');
+  const extraList = EXTRA_OPTIONS.map(op => {
+    const k = `opt${op.id.charAt(0).toUpperCase() + op.id.slice(1)}`;
+    const v = state[k];
+    const label = v === 'yes' ? '追加する' : (v === 'no' ? '必要なし' : '―');
+    const color = v === 'yes' ? '#ea4d3c' : (v === 'no' ? '#3d9970' : '#9ca3af');
+    return `<tr><td style="padding:6px 0;color:#1a2e4a;font-size:13px;">${op.name}</td><td style="padding:6px 0;color:${color};font-weight:700;font-size:13px;text-align:right;">${label}</td></tr>`;
+  }).join('');
+
+  return `
+    <div style="font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;width:760px;padding:0;box-sizing:border-box;background:#ffffff;color:#1a2e4a;line-height:1.6;">
+      <div class="pdf-section" style="background:linear-gradient(135deg,#1a2e4a 0%,#2d4870 100%);color:#ffffff;padding:28px 32px;border-radius:16px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:0.28em;color:#9ca3af;margin-bottom:6px;">B I Z P A T O　P H O T O G R A P H Y</div>
+        <div style="font-size:24px;font-weight:900;margin-bottom:6px;">撮影料金｜お見積り</div>
+        <div style="font-size:12px;color:#c9d6e8;">作成日：${dateStr}</div>
+      </div>
+      <div class="pdf-section" style="background:#e0f2fe;border-radius:14px;padding:18px 24px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:#1a2e4a;letter-spacing:0.16em;margin-bottom:6px;">CUSTOMER</div>
+        <div style="font-size:17px;font-weight:700;color:#1a2e4a;">${customerName}</div>
+        ${propertyName ? `<div style="font-size:13px;color:#1a2e4a;margin-top:4px;">物件名：${propertyName}</div>` : ''}
+        ${email ? `<div style="font-size:12px;color:#4b5563;margin-top:4px;">${email}</div>` : ''}
+      </div>
+      <div class="pdf-section" style="background:linear-gradient(135deg,#1a2e4a 0%,#24405f 100%);color:#ffffff;border-radius:14px;padding:24px 28px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:11px;color:#d7f0ff;letter-spacing:0.16em;margin-bottom:6px;">概算お見積り合計（税抜）</div>
+        <div style="font-size:36px;font-weight:900;line-height:1.2;">${r && !r.custom ? r.totalTaxExcluded.toLocaleString() + '円' : '個別お見積り'}</div>
+        ${r && !r.custom ? `<div style="font-size:13px;color:#c9d6e8;margin-top:6px;">税込目安 ${r.totalTaxIncluded.toLocaleString()}円 ／ 交通費別途</div>` : ''}
+      </div>
+      <div class="pdf-section" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 見積もりの内訳</div>
+        <table style="width:100%;border-collapse:collapse;">${breakdownRows}</table>
+      </div>
+      <div class="pdf-section" style="background:#f8f9fb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ 物件情報</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;width:40%;">間取り</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${roomDef ? roomDef.label : '―'}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">室内面積</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${state.roomSize ? state.roomSize + '㎡' : '―'}</td></tr>
+          ${r && !r.custom ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">適用区分</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${r.appliedLabel}（${r.appliedBy}区分）</td></tr>` : ''}
+        </table>
+      </div>
+      <div class="pdf-section" style="background:#f8f9fb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ 撮影内容の選択</div>
+        <table style="width:100%;border-collapse:collapse;">${camList}</table>
+      </div>
+      <div class="pdf-section" style="background:#f8f9fb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ 追加撮影の選択</div>
+        <table style="width:100%;border-collapse:collapse;">${extraList}</table>
+      </div>
+      <div class="pdf-section" style="background:#fffae6;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ キャンセル・日程変更について</div>
+        <div style="font-size:13px;color:#1a2e4a;line-height:1.9;">撮影予定日の<strong>10日前まで</strong>に弊社にご連絡ください。<br>返金が発生する場合、振込手数料はホスト様のご負担となります。</div>
+      </div>
+      <div class="pdf-section" style="padding:14px 0;text-align:center;">
+        <div style="font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:12px;">
+          ※ 本シミュレーションの金額はあくまで概算（税抜表記）です。正式なお見積りは撮影条件・担当者・移動経路の確認後に確定いたします。<br>
+          ※ 交通費・出張費・宿泊費は上記金額に含まれておりません。
+        </div>
+        <div style="background:#f8f9fb;border-radius:10px;padding:12px;font-size:11px;color:#1a2e4a;line-height:1.7;">
+          <strong style="font-size:13px;">株式会社BizPato｜民泊管理バンク</strong><br>
+          お問い合わせ：consulter@bizpato.com
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+$('#peDownloadPdfBtn').addEventListener('click', async () => {
+  const btn = $('#peDownloadPdfBtn');
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>PDF生成中…';
+  let tempDiv = null;
+  let overlay = null;
+  try{
+    if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
+      throw new Error('PDF生成ライブラリが読み込まれていません');
+    }
+    const { jsPDF } = window.jspdf;
+    overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.96);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:"Noto Sans JP",sans-serif;';
+    overlay.innerHTML = '<div style="text-align:center;color:#1a2e4a;"><div style="width:50px;height:50px;border:4px solid #e0f2fe;border-top-color:#1a2e4a;border-radius:50%;animation:peSpin 1s linear infinite;margin:0 auto 16px;"></div><p style="font-weight:700;font-size:16px;margin:0;">PDF生成中…</p></div><style>@keyframes peSpin{to{transform:rotate(360deg);}}</style>';
+    document.body.appendChild(overlay);
+    const pdfHtml = buildPDFContent();
+    tempDiv = document.createElement('div');
+    tempDiv.innerHTML = pdfHtml.trim();
+    tempDiv.style.cssText = 'position:fixed;top:0;left:0;width:760px;background:#ffffff;z-index:1;padding:20px;';
+    document.body.appendChild(tempDiv);
+    const pdfRoot = tempDiv.firstElementChild;
+    if(!pdfRoot) throw new Error('PDF対象の要素が見つかりません');
+    if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
+    await new Promise(r => setTimeout(r, 300));
+    const sections = pdfRoot.querySelectorAll('.pdf-section');
+    const sectionBottoms = [];
+    sections.forEach(sec => { sectionBottoms.push(sec.offsetTop + sec.offsetHeight); });
+    const canvas = await html2canvas(pdfRoot, {
+      scale:2, useCORS:true, allowTaint:true, logging:false, backgroundColor:'#ffffff',
+      width:pdfRoot.offsetWidth, height:pdfRoot.offsetHeight, windowWidth:800
+    });
+    if(canvas.width === 0 || canvas.height === 0) throw new Error('描画失敗');
+    const pdf = new jsPDF('p','mm','a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const imgWidth = pdfWidth - margin*2;
+    const pageContentHeight = pdfHeight - margin*2;
+    const canvasScale = canvas.width / pdfRoot.offsetWidth;
+    const maxPagePxHeight = (pageContentHeight / imgWidth) * canvas.width;
+    let yPxStart = 0;
+    while(yPxStart < canvas.height){
+      let yPxEnd = Math.min(yPxStart + maxPagePxHeight, canvas.height);
+      if(yPxEnd < canvas.height){
+        const candidates = sectionBottoms.map(b => b * canvasScale).filter(b => b > yPxStart + 100 && b <= yPxEnd);
+        if(candidates.length > 0) yPxEnd = candidates[candidates.length - 1];
+      }
+      const cropHeight = yPxEnd - yPxStart;
+      const cropCanvas = document.createElement('canvas');
+      cropCanvas.width = canvas.width;
+      cropCanvas.height = cropHeight;
+      const ctx = cropCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0,0,cropCanvas.width,cropCanvas.height);
+      ctx.drawImage(canvas, 0, yPxStart, canvas.width, cropHeight, 0, 0, canvas.width, cropHeight);
+      const imgData = cropCanvas.toDataURL('image/jpeg', 0.92);
+      const cropImgHeight = (cropHeight * imgWidth) / canvas.width;
+      if(yPxStart > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, cropImgHeight);
+      yPxStart = yPxEnd;
+    }
+    const lastName = $('#peLastName').value.trim() || 'お客様';
+    const firstName = $('#peFirstName').value.trim() || '';
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+    const filename = `民泊管理バンク_撮影見積_${lastName}${firstName}_${dateStr}.pdf`;
+    pdf.save(filename);
+  }catch(e){
+    console.error('PDF generation failed:', e);
+    alert('PDFの生成に失敗しました。\nエラー内容: ' + (e.message || e));
+  }finally{
+    if(tempDiv && tempDiv.parentNode){ tempDiv.parentNode.removeChild(tempDiv); }
+    if(overlay && overlay.parentNode){ overlay.parentNode.removeChild(overlay); }
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+});
+
+// ===== 初期化 =====
+renderRoomTypes();
+renderCamOptions();
+renderExtraOptions();
+
+})();
+</script>
+
+</body>
+</html>
