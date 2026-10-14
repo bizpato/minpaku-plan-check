@@ -185,6 +185,39 @@
   }
   #photoEstimateApp .addr-input-wrap input:focus{outline:none;border-color:var(--navy);}
   #photoEstimateApp .addr-input-wrap input.err{border-color:var(--red);}
+  #photoEstimateApp .check-label{
+    display:flex;align-items:flex-start;gap:12px;margin-top:16px;padding:14px 16px;
+    background:var(--white);border-radius:10px;cursor:pointer;transition:background .2s,border-color .2s;
+    font-size:14px;color:var(--navy);font-weight:700;line-height:1.6;border:2px solid var(--line);
+  }
+  #photoEstimateApp .check-label:hover{border-color:#c5d2e0;}
+  #photoEstimateApp .check-label.checked{background:#eef7ff;border-color:var(--navy);}
+  #photoEstimateApp .check-label input[type="checkbox"]{
+    width:20px;height:20px;flex-shrink:0;margin-top:1px;cursor:pointer;accent-color:var(--navy);
+  }
+  #photoEstimateApp .check-label .req-mark{
+    display:inline-block;background:#fdeceb;color:var(--red);
+    font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;
+  }
+  #photoEstimateApp .notice-list-ul{font-size:14px;color:var(--navy);line-height:1.9;margin:12px 0 0 20px;}
+  #photoEstimateApp .notice-list-ul li{margin-bottom:6px;}
+  #photoEstimateApp .zip-wrap{display:flex;gap:8px;align-items:center;margin:16px 0 8px;}
+  #photoEstimateApp .zip-wrap input{
+    flex:0 0 160px;padding:14px 16px;border:2px solid var(--line);border-radius:12px;
+    font-size:16px;font-family:inherit;color:var(--navy);background:var(--white);
+    transition:border-color .2s;box-sizing:border-box;letter-spacing:0.05em;
+  }
+  #photoEstimateApp .zip-wrap input:focus{outline:none;border-color:var(--navy);}
+  #photoEstimateApp .zip-wrap .btn-zip{
+    background:var(--white);color:var(--navy);border:2px solid var(--navy);
+    padding:12px 18px;border-radius:12px;font-size:14px;font-weight:700;
+    cursor:pointer;font-family:inherit;transition:all .2s;
+  }
+  #photoEstimateApp .zip-wrap .btn-zip:hover{background:var(--navy);color:var(--white);}
+  #photoEstimateApp .zip-status{font-size:13px;margin-top:6px;line-height:1.6;min-height:18px;}
+  #photoEstimateApp .zip-status.ok{color:var(--green);}
+  #photoEstimateApp .zip-status.err{color:var(--red);}
+
 
   /* ===== Nav ===== */
   #photoEstimateApp .nav{display:flex;gap:14px;margin-top:34px;}
@@ -432,11 +465,16 @@
     <div class="q">
       <div class="q-num">質問 3 / 3<span class="cat-pill">物件情報</span></div>
       <div class="q-title">物件の住所をご入力ください</div>
-      <div class="q-desc">新宿駅起点の最短ルート所要時間を元に、往復の概算交通費を自動算出します。都道府県・市区町村・番地までご入力いただくと精度が高くなります。</div>
-      <div class="addr-input-wrap">
+      <div class="q-desc">弊社から現地までの最短ルート所要時間を元に、往復の概算交通費を自動算出します。郵便番号を入力すると町名まで自動入力されますので、番地のみご追記ください。</div>
+      <div class="zip-wrap">
+        <input type="text" id="peZipcode" placeholder="郵便番号(例: 1600023)" maxlength="8" inputmode="numeric" autocomplete="postal-code">
+        <button type="button" class="btn-zip" id="peZipLookup">住所を取得</button>
+      </div>
+      <div class="zip-status" id="peZipStatus"></div>
+      <div class="addr-input-wrap" style="margin-top:12px;">
         <input type="text" id="peAddress" placeholder="都道府県・市区町村・番地を含めてご入力ください" autocomplete="street-address">
       </div>
-      <div class="q-note">※ レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費となります。<br>※ 高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出し、ご請求します。</div>
+      <div class="q-note">※ レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費。<br>※ 高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出します。</div>
     </div>
 
     <!-- 撮影内容ABCD -->
@@ -482,6 +520,31 @@
       <ul class="notice-list" id="peNoticeList"></ul>
     </div>
 
+    <!-- 同意チェックカード -->
+    <div class="policy-card" id="pePolicyCard">
+      <h4><i class="fa-solid fa-circle-info"></i>キャンセル・日程変更について</h4>
+      <p>撮影予定日の<strong>10日前まで</strong>に弊社にご連絡ください。<br>返金が発生する場合、振込手数料はホスト様のご負担となります。</p>
+      <label class="check-label" id="pePolicyLabel">
+        <input type="checkbox" id="peAgreePolicy">
+        <span>上記のキャンセル・日程変更ポリシーを確認しました<span class="req-mark">必須</span></span>
+      </label>
+    </div>
+
+    <div class="policy-card" id="peNoticeCard">
+      <h4><i class="fa-solid fa-triangle-exclamation"></i>ご確認いただきたい注意事項</h4>
+      <ul class="notice-list-ul">
+        <li>本シミュレーションの金額は<strong>概算（税抜表記）</strong>です。正式なお見積りは撮影条件・担当者・移動経路の確認後に確定いたします。</li>
+        <li>出張・交通費は概算金額です。レンタカー・公共交通機関・駐車場・必要な宿泊は<strong>別途実費</strong>となります。</li>
+        <li>高速代は利用区間・日時・車種に応じた<strong>公式検索のETC料金</strong>を参考に算出し、別途ご請求となる場合があります。</li>
+        <li>ドローン撮影は飛行可否・天候により実施できない場合があります。</li>
+        <li>8時間以上の移動が必要な場合、出張・交通費は別途お見積りとなります。</li>
+      </ul>
+      <label class="check-label" id="peNoticeLabel">
+        <input type="checkbox" id="peAgreeNotice">
+        <span>上記の注意事項を確認しました<span class="req-mark">必須</span></span>
+      </label>
+    </div>
+
     <div class="cta-final">
       <h3>見積もり内容を送る</h3>
       <p>お名前・物件名・メールアドレスをご入力のうえ送信ください。<br>送信後、専門スタッフが詳細な正式見積りをご案内します。</p>
@@ -518,11 +581,6 @@
     <div class="pdf-save-card" id="pePdfSaveCard" style="display:none;">
       <button class="btn-pdf" id="peDownloadPdfBtn"><i class="fa-solid fa-download"></i>見積もりをPDFで保存する</button>
       <p class="pdf-note">送信内容の控えとしていつでもダウンロードできます</p>
-    </div>
-
-    <div class="policy-card">
-      <h4><i class="fa-solid fa-circle-info"></i>キャンセル・日程変更について</h4>
-      <p>撮影予定日の<strong>10日前まで</strong>に弊社にご連絡ください。<br>返金が発生する場合、振込手数料はホスト様のご負担となります。</p>
     </div>
 
     <div class="retry">
@@ -682,6 +740,59 @@ $('#peAddress').addEventListener('input', (e) => {
   checkStep1Done();
 });
 
+// ===== 郵便番号 → 住所自動補完 (zipcloud API) =====
+async function lookupZipcode(digits){
+  const status = $('#peZipStatus');
+  status.textContent = '住所を検索中…';
+  status.className = 'zip-status';
+  try {
+    const res = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${digits}`);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if(data.status === 200 && Array.isArray(data.results) && data.results.length > 0){
+      const r = data.results[0];
+      const addr = (r.address1 || '') + (r.address2 || '') + (r.address3 || '');
+      const addrInput = $('#peAddress');
+      // 既存の住所が郵便番号結果と異なる番地部分を持っていた場合に備え、追記しやすい形で入力
+      addrInput.value = addr;
+      state.propertyAddress = addr;
+      state.transit = null;
+      status.textContent = '住所を自動入力しました。番地まで追記してください。';
+      status.className = 'zip-status ok';
+      addrInput.focus();
+      // カーソルを末尾に(番地入力しやすく)
+      addrInput.setSelectionRange(addr.length, addr.length);
+      checkStep1Done();
+    } else {
+      status.textContent = 'この郵便番号の住所が見つかりませんでした。住所欄にご自身でご入力ください。';
+      status.className = 'zip-status err';
+    }
+  } catch (e) {
+    status.textContent = '住所検索に失敗しました。住所欄にご自身でご入力ください。';
+    status.className = 'zip-status err';
+  }
+}
+
+$('#peZipcode').addEventListener('input', (e) => {
+  // 7桁の数字が揃ったら自動発火
+  const digits = e.target.value.replace(/[^0-9]/g, '');
+  if(digits.length === 7){
+    lookupZipcode(digits);
+  } else if(digits.length === 0){
+    $('#peZipStatus').textContent = '';
+    $('#peZipStatus').className = 'zip-status';
+  }
+});
+$('#peZipLookup').addEventListener('click', () => {
+  const digits = $('#peZipcode').value.replace(/[^0-9]/g, '');
+  if(digits.length !== 7){
+    $('#peZipStatus').textContent = '郵便番号は7桁の数字でご入力ください。';
+    $('#peZipStatus').className = 'zip-status err';
+    return;
+  }
+  lookupZipcode(digits);
+});
+
 // ===== STEP1 完了判定 =====
 function checkStep1Done(){
   const camDone = CAM_OPTIONS.every(op => state[`opt${op.id}`] !== null);
@@ -829,19 +940,19 @@ function renderResult(){
     if(t.custom){
       html += `
         <div class="inc-row extra">
-          <div class="name">出張・交通費<small>8時間超のため別途お見積り（新宿駅から約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="name">出張・交通費<small>8時間超のため別途お見積り（弊社から現地まで約${t.oneWayMinutes}分 / 片道）</small></div>
           <div class="val" style="color:var(--mid);font-size:14px;">別途見積</div>
         </div>`;
     }else if(t.cost === 0){
       html += `
         <div class="inc-row">
-          <div class="name">出張・交通費<small>${t.costLabel}（新宿駅から約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="name">出張・交通費<small>${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分 / 片道）</small></div>
           <div class="val" style="color:var(--green);">無料</div>
         </div>`;
     }else{
       html += `
         <div class="inc-row extra">
-          <div class="name">出張・交通費<small>${t.costLabel}（新宿駅から約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="name">出張・交通費<small>${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分 / 片道）</small></div>
           <div class="val">+${t.cost.toLocaleString()}円</div>
         </div>`;
     }
@@ -869,7 +980,7 @@ function renderResult(){
   if(r.transit && r.transit.ok && r.transit.custom){
     notices.push('出張・交通費は往復8時間を超えるため、別途お見積りとなります。');
   }else{
-    notices.push('出張・交通費は新宿駅起点の最短ルート所要時間を元にした概算です。レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費、高速代は利用区間・日時・車種に応じた公式ETC料金を参考に算出し、ご請求します。');
+    notices.push('出張・交通費は弊社から現地までの最短ルート所要時間を元にした概算です。レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費。高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出します。');
   }
   if(r.items.some(i => i.id === 'drone')){
     notices.push('ドローン写真は飛行可否・天候により実施できない場合があります。別途、飛行許可申請費用が発生する場合があります。');
@@ -903,7 +1014,7 @@ $('#peToResult').addEventListener('click', async () => {
   // ローディングオーバーレイ
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.96);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:"Noto Sans JP",sans-serif;';
-  overlay.innerHTML = '<div style="text-align:center;color:#1a2e4a;"><div style="width:50px;height:50px;border:4px solid #e0f2fe;border-top-color:#1a2e4a;border-radius:50%;animation:peSpin 1s linear infinite;margin:0 auto 16px;"></div><p style="font-weight:700;font-size:16px;margin:0;">新宿駅からの所要時間を計算中…</p></div><style>@keyframes peSpin{to{transform:rotate(360deg);}}</style>';
+  overlay.innerHTML = '<div style="text-align:center;color:#1a2e4a;"><div style="width:50px;height:50px;border:4px solid #e0f2fe;border-top-color:#1a2e4a;border-radius:50%;animation:peSpin 1s linear infinite;margin:0 auto 16px;"></div><p style="font-weight:700;font-size:16px;margin:0;">現地までの所要時間を計算中…</p></div><style>@keyframes peSpin{to{transform:rotate(360deg);}}</style>';
   document.body.appendChild(overlay);
   try {
     const res = await fetch(N8N_TRANSIT_URL, {
@@ -929,6 +1040,8 @@ $('#peToResult').addEventListener('click', async () => {
   btn.textContent = originalText;
   $('#peAddress').classList.remove('err');
   renderResult();
+  // 結果ページ初期: チェックボックス未チェックなので送信ボタン非活性
+  $('#peSendBtn').disabled = true;
   showStep('#peStepResult', 2);
 });
 
@@ -948,6 +1061,12 @@ $('#peRetryBtn').addEventListener('click', () => {
   $$('.opt.sel').forEach(b => b.classList.remove('sel'));
   $('#peRoomSize').value = '';
   const addrEl = $('#peAddress'); if(addrEl){ addrEl.value = ''; addrEl.classList.remove('err'); }
+  const zipEl = $('#peZipcode'); if(zipEl){ zipEl.value = ''; }
+  const zipStatus = $('#peZipStatus'); if(zipStatus){ zipStatus.textContent = ''; zipStatus.className = 'zip-status'; }
+  const policyChk = $('#peAgreePolicy'); if(policyChk){ policyChk.checked = false; }
+  const noticeChk = $('#peAgreeNotice'); if(noticeChk){ noticeChk.checked = false; }
+  const policyLbl = $('#pePolicyLabel'); if(policyLbl){ policyLbl.classList.remove('checked'); }
+  const noticeLbl = $('#peNoticeLabel'); if(noticeLbl){ noticeLbl.classList.remove('checked'); }
   ['peLastName','peFirstName','pePropertyName','peEmail'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.value = ''; el.classList.remove('err'); }
@@ -992,7 +1111,7 @@ function buildSummaryText(){
   L.push('　' + (state.propertyAddress || '未入力'));
   if(state.transit && state.transit.ok){
     const t = state.transit;
-    L.push('　新宿駅から約' + t.oneWayMinutes + '分（片道）／ 往復約' + t.roundTripMinutes + '分');
+    L.push('　弊社から現地まで約' + t.oneWayMinutes + '分（片道）／ 往復約' + t.roundTripMinutes + '分');
     if(t.custom){
       L.push('　出張・交通費：別途お見積り（往復8時間超）');
     }else if(t.cost === 0){
@@ -1017,7 +1136,8 @@ function buildSummaryText(){
     L.push('　合計（税込目安）：' + r.totalTaxIncluded.toLocaleString() + '円');
     L.push('');
     if(state.transit && state.transit.ok && !state.transit.custom){
-      L.push('　（出張・交通費を含む／レンタカー・駐車場・宿泊・高速代等は別途実費）');
+      L.push('　（出張・交通費を含む）');
+      L.push('　※ レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費。高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出します。');
     }else if(state.transit && state.transit.ok && state.transit.custom){
       L.push('　（出張・交通費は往復8時間超のため別途お見積り）');
     }else{
@@ -1095,8 +1215,33 @@ function validateForm(){
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   if(!emailOk){ $('#peEmail').classList.add('err'); err.textContent = 'メールアドレスの形式が正しくありません。'; return null; }
   err.textContent = '';
+  // チェックボックス確認
+  const policyOk = $('#peAgreePolicy').checked;
+  const noticeOk = $('#peAgreeNotice').checked;
+  if(!policyOk || !noticeOk){
+    err.textContent = 'キャンセルポリシーおよび注意事項への同意（チェック）が必要です。';
+    return null;
+  }
   return { lastName, firstName, propertyName, email };
 }
+
+// ===== チェックボックス状態による送信ボタン活性制御 =====
+function updateSendButtonState(){
+  const policyOk = $('#peAgreePolicy').checked;
+  const noticeOk = $('#peAgreeNotice').checked;
+  const sendBtn = $('#peSendBtn');
+  // 送信済みの場合は disabled のまま
+  if(sendBtn.textContent === '送信済み') return;
+  sendBtn.disabled = !(policyOk && noticeOk);
+}
+$('#peAgreePolicy').addEventListener('change', (e) => {
+  $('#pePolicyLabel').classList.toggle('checked', e.target.checked);
+  updateSendButtonState();
+});
+$('#peAgreeNotice').addEventListener('change', (e) => {
+  $('#peNoticeLabel').classList.toggle('checked', e.target.checked);
+  updateSendButtonState();
+});
 
 // ===== 送信 =====
 $('#peSendBtn').addEventListener('click', async () => {
@@ -1157,11 +1302,11 @@ function buildPDFContent(){
     if(r.transit && r.transit.ok){
       const t = r.transit;
       if(t.custom){
-        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">8時間超・別途お見積り（新宿駅から約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#6b7280;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">別途見積</td></tr>`;
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">8時間超・別途お見積り（弊社から現地まで約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#6b7280;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">別途見積</td></tr>`;
       }else if(t.cost === 0){
-        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（新宿駅から約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#3d9970;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">無料</td></tr>`;
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#3d9970;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">無料</td></tr>`;
       }else{
-        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（新宿駅から約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#ea4d3c;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">+${t.cost.toLocaleString()}円</td></tr>`;
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#ea4d3c;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">+${t.cost.toLocaleString()}円</td></tr>`;
       }
     }
     breakdownRows += `<tr style="border-top:2px solid #1a2e4a;"><td style="padding:14px 0;color:#1a2e4a;font-weight:700;font-size:15px;">小計（税抜）</td><td style="padding:14px 0;color:#ea4d3c;font-weight:900;font-size:17px;text-align:right;">${r.totalTaxExcluded.toLocaleString()}円</td></tr>`;
@@ -1214,7 +1359,7 @@ function buildPDFContent(){
           <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;width:40%;">間取り</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${roomDef ? roomDef.label : '―'}</td></tr>
           <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">室内面積</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${state.roomSize ? state.roomSize + '㎡' : '―'}</td></tr>
           ${state.propertyAddress ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;vertical-align:top;">物件住所</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${state.propertyAddress}</td></tr>` : ''}
-          ${state.transit && state.transit.ok ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">新宿駅からの所要時間</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">約${state.transit.oneWayMinutes}分（片道）／ 往復約${state.transit.roundTripMinutes}分</td></tr>` : ''}
+          ${state.transit && state.transit.ok ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">現地までの所要時間</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">約${state.transit.oneWayMinutes}分（片道）／ 往復約${state.transit.roundTripMinutes}分</td></tr>` : ''}
           ${r && !r.custom ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">適用区分</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${r.appliedLabel}（${r.appliedBy}区分）</td></tr>` : ''}
         </table>
       </div>
@@ -1233,8 +1378,9 @@ function buildPDFContent(){
       <div class="pdf-section" style="padding:14px 0;text-align:center;">
         <div style="font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:12px;">
           ※ 本シミュレーションの金額はあくまで概算（税抜表記）です。正式なお見積りは撮影条件・担当者・移動経路の確認後に確定いたします。<br>
-          ※ 出張・交通費は新宿駅起点の最短ルート所要時間を元にした概算です。レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費となります。<br>
-          ※ 高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出し、ご請求します。
+          ※ 出張・交通費は弊社から現地までの最短ルート所要時間を元にした概算です。<br>
+          ※ レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費。<br>
+          ※ 高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出します。
         </div>
         <div style="background:#f8f9fb;border-radius:10px;padding:12px;font-size:11px;color:#1a2e4a;line-height:1.7;">
           <strong style="font-size:13px;">株式会社BizPato｜民泊管理バンク</strong><br>
