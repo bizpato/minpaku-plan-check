@@ -912,7 +912,13 @@ function renderResult(){
 
   hero.classList.remove('custom');
   totalEl.innerHTML = `${r.totalTaxExcluded.toLocaleString()}<span class="unit-s">円</span>`;
-  subEl.innerHTML = `税抜 ／ 税込目安 ${r.totalTaxIncluded.toLocaleString()}円<br><span style="font-size:12px;opacity:0.85;">※ 交通費・出張費・宿泊費は含まれません</span>`;
+  let heroNote;
+  if(r.transit && r.transit.ok && r.transit.custom){
+    heroNote = '※ 出張・交通費は別途お見積り／宿泊・駐車場等の実費も別途';
+  }else{
+    heroNote = '※ 宿泊・駐車場・レンタカー代等の実費は別途';
+  }
+  subEl.innerHTML = `税抜 ／ 税込目安 ${r.totalTaxIncluded.toLocaleString()}円<br><span style="font-size:12px;opacity:0.85;">${heroNote}</span>`;
   tagEl.style.display = 'none';
 
   let html = '';
