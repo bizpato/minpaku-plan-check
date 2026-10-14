@@ -478,7 +478,7 @@
         </div>
         <div class="form-field">
           <label for="pePropertyName">物件名 <span class="req">必須</span></label>
-          <input type="text" id="pePropertyName" placeholder="例：LULLA鎌倉">
+          <input type="text" id="pePropertyName" placeholder="物件名を入力してください">
         </div>
         <div class="form-field">
           <label for="peEmail">メールアドレス <span class="req">必須</span></label>
@@ -538,8 +538,8 @@ const ROOM_PRICES = [
 const CAM_OPTIONS = [
   { id:'A', name:'備品・アメニティ写真', desc:'調理器具やアメニティなど。整列・基本補正込み。', price:20000 },
   { id:'B', name:'ゲストガイド用写真',   desc:'家電の操作部や設置場所。ゲストへの案内に。',   price:25000 },
-  { id:'C', name:'社内引継ぎ動画',       desc:'収納内部・設備の位置を記録。無編集で納品。',   price:10000 },
-  { id:'D', name:'Booking認証用動画',   desc:'所在地確認用の連続動画。無編集で納品。',        price:10000 }
+  { id:'C', name:'ゲストサポート引継ぎ動画', desc:'弊社ゲストサポート部門が確認用に閲覧するルームツアー動画。収納内部・設備の位置を記録。無編集で納品。<br><span style="color:#c98a26;font-size:13px;font-weight:700;">※ 月額プランご契約の場合のみ必要（ハウスマニュアル単品でのご依頼の場合は不要）</span>', price:10000 },
+  { id:'D', name:'Booking.com認証用動画',   desc:'Booking.comでは、リスティング公開時に認証用動画の提出を求められる場合があります。その提出用の動画。無編集で納品。',        price:10000 }
 ];
 
 const EXTRA_OPTIONS = [
@@ -764,7 +764,7 @@ function renderResult(){
 
   hero.classList.remove('custom');
   totalEl.innerHTML = `${r.totalTaxExcluded.toLocaleString()}<span class="unit-s">円</span>`;
-  subEl.textContent = `税抜 ／ 税込目安 ${r.totalTaxIncluded.toLocaleString()}円`;
+  subEl.innerHTML = `税抜 ／ 税込目安 ${r.totalTaxIncluded.toLocaleString()}円<br><span style="font-size:12px;opacity:0.85;">※ 交通費・出張費・宿泊費は含まれません</span>`;
   tagEl.style.display = 'none';
 
   let html = '';
