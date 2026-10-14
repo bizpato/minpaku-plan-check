@@ -587,11 +587,7 @@
       <button id="peRetryBtn">もう一度試算する</button>
     </div>
 
-    <p class="disclaimer">
-      ※ 本シミュレーションの金額はあくまで概算（税抜表記）です。正式なお見積りは、撮影条件・担当者・移動経路の確認のうえ確定いたします。<br>
-      ※ 交通費・出張費・宿泊費は上記金額に含まれておりません。別途お見積りいたします。<br>
-      ※ ドローン撮影は飛行可否・天候により実施できない場合があります。
-    </p>
+
   </section>
 
   <div class="footer-brand">BIZPATO PHOTOGRAPHY | 株式会社BizPato</div>
@@ -974,24 +970,23 @@ function renderResult(){
   breakdownEl.innerHTML = html;
   deliveryEl.style.display = 'block';
 
-  // 注記
+  // 注記: 選択内容に依存する補足のみ(一般的な注意事項は下部のチェックボックスカードに集約)
   const notices = [];
-  notices.push('概算金額です。撮影条件・担当者・移動経路の確認後、正式なお見積りをご案内します。');
+  if(r.appliedBy === '面積'){
+    notices.push(`${r.roomTypeLabel}をお選びいただきましたが、面積が広いため${r.appliedLabel}の料金区分を適用しています。`);
+  }
   if(r.transit && r.transit.ok && r.transit.custom){
     notices.push('出張・交通費は往復8時間を超えるため、別途お見積りとなります。');
-  }else{
-    notices.push('出張・交通費は弊社から現地までの最短ルート所要時間を元にした概算です。レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費。高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出します。');
   }
   if(r.items.some(i => i.id === 'drone')){
-    notices.push('ドローン写真は飛行可否・天候により実施できない場合があります。別途、飛行許可申請費用が発生する場合があります。');
+    notices.push('ドローン撮影は飛行可否・天候により実施できない場合があります。別途、飛行許可申請費用が発生する場合があります。');
   }
   if(r.items.some(i => i.id === 'morning')){
     notices.push('早朝撮影で前泊が必要な場合、宿泊費が別途発生します。');
   }
-  if(r.appliedBy === '面積'){
-    notices.push(`${r.roomTypeLabel}をお選びいただきましたが、面積が広いため${r.appliedLabel}の料金区分を適用しています。`);
-  }
   noticeEl.innerHTML = notices.map(n => `<li>${n}</li>`).join('');
+  // 補足がない場合は notice-list 自体を非表示
+  noticeEl.style.display = notices.length > 0 ? 'block' : 'none';
 }
 
 // ===== Navigation =====
