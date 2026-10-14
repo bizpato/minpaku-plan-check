@@ -185,6 +185,41 @@
   }
   #photoEstimateApp .addr-input-wrap input:focus{outline:none;border-color:var(--navy);}
   #photoEstimateApp .addr-input-wrap input.err{border-color:var(--red);}
+  #photoEstimateApp .urgent-opts{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+  #photoEstimateApp .urgent-opt{
+    display:flex;align-items:center;gap:14px;
+    border:2px solid var(--line);border-radius:12px;
+    padding:16px 20px;cursor:pointer;background:var(--white);
+    transition:all .2s;
+  }
+  #photoEstimateApp .urgent-opt:hover{border-color:#c5d2e0;background:#fcfdff;}
+  #photoEstimateApp .urgent-opt.checked{border-color:var(--navy);background:var(--sky-light);}
+  #photoEstimateApp .urgent-opt input[type="checkbox"]{
+    width:22px;height:22px;flex-shrink:0;cursor:pointer;accent-color:var(--navy);margin:0;
+  }
+  #photoEstimateApp .urgent-opt .txt{flex:1;font-size:15px;color:var(--navy);line-height:1.6;}
+  #photoEstimateApp .urgent-opt .txt strong{display:block;font-weight:700;margin-bottom:2px;}
+  #photoEstimateApp .urgent-opt .txt small{display:block;font-size:13px;color:var(--mid);font-weight:400;}
+  #photoEstimateApp .urgent-opt .badge{
+    background:#fdeceb;color:var(--red);font-size:12px;font-weight:700;
+    padding:4px 11px;border-radius:99px;flex-shrink:0;
+  }
+  #photoEstimateApp .date-row{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;}
+  #photoEstimateApp .date-field{flex:1;min-width:180px;}
+  #photoEstimateApp .date-field label{
+    display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;
+  }
+  #photoEstimateApp .date-field label .opt-mark{
+    display:inline-block;background:var(--line);color:var(--mid);
+    font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px;
+  }
+  #photoEstimateApp .date-field input{
+    width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:10px;
+    font-size:15px;font-family:inherit;color:var(--navy);background:var(--white);
+    box-sizing:border-box;transition:border-color .2s;
+  }
+  #photoEstimateApp .date-field input:focus{outline:none;border-color:var(--navy);}
+
   #photoEstimateApp .check-label{
     display:flex;align-items:flex-start;gap:12px;margin-top:16px;padding:14px 16px;
     background:var(--white);border-radius:10px;cursor:pointer;transition:background .2s,border-color .2s;
@@ -445,7 +480,7 @@
     <div class="q">
       <div class="q-num">質問 1 / 3<span class="cat-pill">物件情報</span></div>
       <div class="q-title">物件の間取りを選んでください</div>
-      <div class="q-desc">お部屋の間取りで基本料金区分を判定します。</div>
+      <div class="q-desc">お部屋の間取りで基本料金区分を判定します。<br><strong>基本撮影には「備品・アメニティ写真」が含まれます</strong>（調理器具やアメニティなど、整列・基本補正込み）。</div>
       <div class="opts" id="peRoomTypes"></div>
     </div>
 
@@ -495,6 +530,42 @@
 
     <div id="peExtraOptions"></div>
 
+    <!-- 緊急対応 -->
+    <div class="ops-intro">
+      <div class="ops-intro-line"></div>
+      <span>緊急対応（任意）</span>
+      <div class="ops-intro-line"></div>
+    </div>
+
+    <div class="q">
+      <div class="q-num"><span class="cat-pill">緊急対応</span></div>
+      <div class="q-title">撮影日・納品日をお急ぎですか？</div>
+      <div class="q-desc">お急ぎの場合はご選択ください。緊急対応の追加料金は表示金額には含まれず、希望日と内容を確認後に別途ご案内いたします。</div>
+      <div class="urgent-opts">
+        <label class="urgent-opt" id="peUrgentShootLabel">
+          <input type="checkbox" id="peUrgentShoot">
+          <span class="txt"><strong>撮影を急ぎたい</strong><small>直近での撮影や、急な撮り直しが必要</small></span>
+          <span class="badge">個別見積</span>
+        </label>
+        <label class="urgent-opt" id="peUrgentDeliveryLabel">
+          <input type="checkbox" id="peUrgentDelivery">
+          <span class="txt"><strong>納品を急ぎたい</strong><small>通常の納期より早く写真・動画が必要</small></span>
+          <span class="badge">個別見積</span>
+        </label>
+      </div>
+      <div class="date-row">
+        <div class="date-field">
+          <label for="peShootDate">撮影希望日<span class="opt-mark">任意</span></label>
+          <input type="date" id="peShootDate">
+        </div>
+        <div class="date-field">
+          <label for="peDeliveryDate">納品希望日<span class="opt-mark">任意</span></label>
+          <input type="date" id="peDeliveryDate">
+        </div>
+      </div>
+      <div class="q-note" style="margin-top:16px;">※ 緊急対応の追加料金は、表示金額に含みません。希望日と内容を確認後にご案内します。</div>
+    </div>
+
     <div class="nav">
       <button class="btn btn-primary" id="peToResult" disabled>見積もり結果をみる</button>
     </div>
@@ -523,7 +594,7 @@
     <!-- 同意チェックカード -->
     <div class="policy-card" id="pePolicyCard">
       <h4><i class="fa-solid fa-circle-info"></i>キャンセル・日程変更について</h4>
-      <p>撮影予定日の<strong>10日前まで</strong>に弊社にご連絡ください。<br>返金が発生する場合、振込手数料はホスト様のご負担となります。</p>
+      <p>撮影予定日の<strong>10日前までのキャンセルは無料</strong>です。<br>それ以降は<strong style="color:var(--red);">100%のキャンセル料</strong>が発生します。</p>
       <label class="check-label" id="pePolicyLabel">
         <input type="checkbox" id="peAgreePolicy">
         <span>上記のキャンセル・日程変更ポリシーを確認しました<span class="req-mark">必須</span></span>
@@ -601,16 +672,15 @@
 
 // ===== Data =====
 const ROOM_PRICES = [
-  { key:'1R-1K',       label:'1R・1K',          sizeLabel:'30㎡以下',       sizeMax:30,     price:50000,  cuts:20 },
-  { key:'1DK-1LDK',    label:'1DK・1LDK',       sizeLabel:'30㎡超〜50㎡',   sizeMax:50,     price:65000,  cuts:25 },
-  { key:'2K-2DK-2LDK', label:'2K・2DK・2LDK',   sizeLabel:'50㎡超〜80㎡',   sizeMax:80,     price:90000,  cuts:30 },
-  { key:'3K-3DK-3LDK', label:'3K・3DK・3LDK',   sizeLabel:'80㎡超〜110㎡',  sizeMax:110,    price:115000, cuts:35 },
-  { key:'4K-4DK-4LDK', label:'4K・4DK・4LDK',   sizeLabel:'110㎡超〜150㎡', sizeMax:150,    price:135000, cuts:40 },
+  { key:'1R-1K',       label:'1R・1K',          sizeLabel:'30㎡以下',       sizeMax:30,     price:70000,  cuts:20 },
+  { key:'1DK-1LDK',    label:'1DK・1LDK',       sizeLabel:'30㎡超〜50㎡',   sizeMax:50,     price:85000,  cuts:25 },
+  { key:'2K-2DK-2LDK', label:'2K・2DK・2LDK',   sizeLabel:'50㎡超〜80㎡',   sizeMax:80,     price:110000, cuts:30 },
+  { key:'3K-3DK-3LDK', label:'3K・3DK・3LDK',   sizeLabel:'80㎡超〜110㎡',  sizeMax:110,    price:135000, cuts:35 },
+  { key:'4K-4DK-4LDK', label:'4K・4DK・4LDK',   sizeLabel:'110㎡超〜150㎡', sizeMax:150,    price:155000, cuts:40 },
   { key:'5plus',       label:'5室以上・複数棟', sizeLabel:'150㎡超',        sizeMax:999999, price:null,   cuts:null, custom:true }
 ];
 
 const CAM_OPTIONS = [
-  { id:'A', name:'備品・アメニティ写真', desc:'調理器具やアメニティなど。整列・基本補正込み。', price:20000 },
   { id:'B', name:'ゲストガイド用写真',   desc:'家電の操作部や設置場所。ゲストへの案内に。',   price:25000 },
   { id:'C', name:'ゲストサポート引継ぎ動画', desc:'弊社ゲストサポート部門が確認用に閲覧するルームツアー動画。収納内部・設備の位置を記録。無編集で納品。<br><span style="color:#c98a26;font-size:13px;font-weight:700;">※ 月額プランご契約の場合のみ必要（ハウスマニュアル単品でのご依頼の場合は不要）</span>', price:10000 },
   { id:'D', name:'Booking.com認証用動画',   desc:'Booking.comでは、リスティング公開時に認証用動画の提出を求められる場合があります。その提出用の動画。無編集で納品。',        price:10000 }
@@ -628,8 +698,12 @@ const state = {
   roomSize: null,
   propertyAddress: null,
   transit: null,
-  optA: null, optB: null, optC: null, optD: null,
+  optB: null, optC: null, optD: null,
   optMorning: null, optEvening: null, optDrone: null,
+  urgentShoot: false,
+  urgentDelivery: false,
+  shootDate: '',
+  deliveryDate: '',
   lastResult: null
 };
 
@@ -719,6 +793,22 @@ function renderExtraOptions(){
     });
   });
 }
+
+// ===== 緊急対応 =====
+$('#peUrgentShoot').addEventListener('change', (e) => {
+  state.urgentShoot = e.target.checked;
+  $('#peUrgentShootLabel').classList.toggle('checked', e.target.checked);
+});
+$('#peUrgentDelivery').addEventListener('change', (e) => {
+  state.urgentDelivery = e.target.checked;
+  $('#peUrgentDeliveryLabel').classList.toggle('checked', e.target.checked);
+});
+$('#peShootDate').addEventListener('change', (e) => {
+  state.shootDate = e.target.value || '';
+});
+$('#peDeliveryDate').addEventListener('change', (e) => {
+  state.deliveryDate = e.target.value || '';
+});
 
 // ===== 面積入力 =====
 $('#peRoomSize').addEventListener('input', (e) => {
@@ -959,6 +1049,20 @@ function renderResult(){
         </div>`;
     }
   }
+  // 緊急対応(選択時のみ表示、合計には加算しない)
+  if(state.urgentShoot || state.urgentDelivery){
+    let urgentLabels = [];
+    if(state.urgentShoot) urgentLabels.push('撮影を急ぎたい');
+    if(state.urgentDelivery) urgentLabels.push('納品を急ぎたい');
+    let urgentDates = [];
+    if(state.shootDate) urgentDates.push('撮影希望日: ' + state.shootDate);
+    if(state.deliveryDate) urgentDates.push('納品希望日: ' + state.deliveryDate);
+    html += `
+      <div class="inc-row">
+        <div class="name">緊急対応<small>${urgentLabels.join(' / ')}${urgentDates.length ? '　（' + urgentDates.join(' / ') + '）' : ''}</small></div>
+        <div class="val" style="color:var(--mid);font-size:14px;">別途ご案内</div>
+      </div>`;
+  }
   // 合計
   html += `
     <div class="inc-row subtotal">
@@ -1068,6 +1172,15 @@ $('#peRetryBtn').addEventListener('click', () => {
   const noticeChk = $('#peAgreeNotice'); if(noticeChk){ noticeChk.checked = false; }
   const policyLbl = $('#pePolicyLabel'); if(policyLbl){ policyLbl.classList.remove('checked'); }
   const noticeLbl = $('#peNoticeLabel'); if(noticeLbl){ noticeLbl.classList.remove('checked'); }
+  // 緊急対応リセット
+  state.urgentShoot = false;
+  state.urgentDelivery = false;
+  state.shootDate = '';
+  state.deliveryDate = '';
+  const uS = $('#peUrgentShoot'); if(uS){ uS.checked = false; $('#peUrgentShootLabel').classList.remove('checked'); }
+  const uD = $('#peUrgentDelivery'); if(uD){ uD.checked = false; $('#peUrgentDeliveryLabel').classList.remove('checked'); }
+  const sD = $('#peShootDate'); if(sD){ sD.value = ''; }
+  const dD = $('#peDeliveryDate'); if(dD){ dD.value = ''; }
   ['peLastName','peFirstName','pePropertyName','peEmail'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.value = ''; el.classList.remove('err'); }
@@ -1099,6 +1212,15 @@ function buildSummaryText(){
     const label = v === 'request' ? '撮影を依頼する' : (v === 'self' ? '自分で撮影する' : '未回答');
     L.push('　' + op.id + ' ' + op.name + '：' + label);
   });
+  if(state.urgentShoot || state.urgentDelivery || state.shootDate || state.deliveryDate){
+    L.push('');
+    L.push('■ 緊急対応');
+    if(state.urgentShoot) L.push('　撮影を急ぎたい：選択あり（個別見積）');
+    if(state.urgentDelivery) L.push('　納品を急ぎたい：選択あり（個別見積）');
+    if(state.shootDate) L.push('　撮影希望日：' + state.shootDate);
+    if(state.deliveryDate) L.push('　納品希望日：' + state.deliveryDate);
+    L.push('　※ 緊急対応の追加料金は表示金額に含まれません');
+  }
   L.push('');
   L.push('■ 追加撮影');
   EXTRA_OPTIONS.forEach(op => {
@@ -1185,6 +1307,12 @@ function buildPayload(lastName, firstName, propertyName, email){
     } : null,
     shoots: camOpts,
     extras: extraOpts,
+    urgent: {
+      urgentShoot: state.urgentShoot ? '撮影を急ぎたい（個別見積）' : '',
+      urgentDelivery: state.urgentDelivery ? '納品を急ぎたい（個別見積）' : '',
+      shootDate: state.shootDate || '',
+      deliveryDate: state.deliveryDate || ''
+    },
     estimate: r && !r.custom ? {
       basePrice: r.basePrice,
       optionsTotal: r.items.reduce((s,i)=>s+i.price,0),
