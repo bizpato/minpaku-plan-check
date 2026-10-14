@@ -177,6 +177,15 @@
   }
   #photoEstimateApp .size-input-wrap input:focus{outline:none;border-color:var(--navy);}
   #photoEstimateApp .size-input-wrap .unit{font-size:18px;color:var(--navy);font-weight:700;}
+  #photoEstimateApp .addr-input-wrap{display:flex;margin:16px 0 8px;}
+  #photoEstimateApp .addr-input-wrap input{
+    flex:1;padding:14px 16px;border:2px solid var(--line);border-radius:12px;
+    font-size:16px;font-family:inherit;color:var(--navy);background:var(--white);
+    transition:border-color .2s;box-sizing:border-box;
+  }
+  #photoEstimateApp .addr-input-wrap input:focus{outline:none;border-color:var(--navy);}
+  #photoEstimateApp .addr-input-wrap input.err{border-color:var(--red);}
+
   /* ===== Nav ===== */
   #photoEstimateApp .nav{display:flex;gap:14px;margin-top:34px;}
   #photoEstimateApp .btn{
@@ -401,7 +410,7 @@
 
     <!-- 間取り -->
     <div class="q">
-      <div class="q-num">質問 1 / 2<span class="cat-pill">物件情報</span></div>
+      <div class="q-num">質問 1 / 3<span class="cat-pill">物件情報</span></div>
       <div class="q-title">物件の間取りを選んでください</div>
       <div class="q-desc">お部屋の間取りで基本料金区分を判定します。</div>
       <div class="opts" id="peRoomTypes"></div>
@@ -409,7 +418,7 @@
 
     <!-- 面積 -->
     <div class="q">
-      <div class="q-num">質問 2 / 2<span class="cat-pill">物件情報</span></div>
+      <div class="q-num">質問 2 / 3<span class="cat-pill">物件情報</span></div>
       <div class="q-title">室内面積をご入力ください</div>
       <div class="q-desc">だいたいの㎡数で結構です。例：45㎡の1LDKなら「45」とご入力ください。</div>
       <div class="size-input-wrap">
@@ -417,6 +426,17 @@
         <span class="unit">㎡</span>
       </div>
       <div class="q-note">※ 間取りと面積のうち、<strong>高い料金区分</strong>を自動で適用します。例：70㎡の1LDKは2LDK区分の料金になります。</div>
+    </div>
+
+    <!-- 住所 -->
+    <div class="q">
+      <div class="q-num">質問 3 / 3<span class="cat-pill">物件情報</span></div>
+      <div class="q-title">物件の住所をご入力ください</div>
+      <div class="q-desc">新宿駅起点の最短ルート所要時間を元に、往復の概算交通費を自動算出します。都道府県・市区町村・番地までご入力いただくと精度が高くなります。</div>
+      <div class="addr-input-wrap">
+        <input type="text" id="peAddress" placeholder="都道府県・市区町村・番地を含めてご入力ください" autocomplete="street-address">
+      </div>
+      <div class="q-note">※ レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費となります。<br>※ 高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出し、ご請求します。</div>
     </div>
 
     <!-- 撮影内容ABCD -->
@@ -552,6 +572,8 @@ const EXTRA_OPTIONS = [
 const state = {
   roomType: null,
   roomSize: null,
+  propertyAddress: null,
+  transit: null,
   optA: null, optB: null, optC: null, optD: null,
   optMorning: null, optEvening: null, optDrone: null,
   lastResult: null
@@ -559,6 +581,7 @@ const state = {
 
 // ===== Webhook URL =====
 const N8N_WEBHOOK_URL = 'https://bizpato.app.n8n.cloud/webhook/photo-estimate';
+const N8N_TRANSIT_URL = 'https://bizpato.app.n8n.cloud/webhook/photo-estimate-transit';
 
 // ===== DOM helpers =====
 const $ = sel => document.querySelector(sel);
@@ -650,6 +673,15 @@ $('#peRoomSize').addEventListener('input', (e) => {
   checkStep1Done();
 });
 
+// ===== 住所入力 =====
+$('#peAddress').addEventListener('input', (e) => {
+  const v = e.target.value.trim();
+  state.propertyAddress = v.length > 0 ? v : null;
+  // 住所が変更されたら前回の試算結果をクリア
+  state.transit = null;
+  checkStep1Done();
+});
+
 // ===== STEP1 完了判定 =====
 function checkStep1Done(){
   const camDone = CAM_OPTIONS.every(op => state[`opt${op.id}`] !== null);
@@ -657,7 +689,7 @@ function checkStep1Done(){
     const k = `opt${op.id.charAt(0).toUpperCase() + op.id.slice(1)}`;
     return state[k] !== null;
   });
-  const done = state.roomType && state.roomSize !== null && state.roomSize > 0 && camDone && extraDone;
+  const done = state.roomType && state.roomSize !== null && state.roomSize > 0 && state.propertyAddress && camDone && extraDone;
   $('#peToResult').disabled = !done;
 }
 
@@ -713,6 +745,13 @@ function calcEstimate(){
     }
   });
 
+  // 交通費を加算(custom = 8時間超は加算しない)
+  let transitCost = 0;
+  if(state.transit && state.transit.ok && !state.transit.custom){
+    transitCost = state.transit.cost || 0;
+    total += transitCost;
+  }
+
   return {
     custom: false,
     roomTypeLabel: baseByRoom.label,
@@ -721,6 +760,8 @@ function calcEstimate(){
     basePrice: applied.price,
     cuts: applied.cuts,
     items,
+    transit: state.transit,
+    transitCost,
     totalTaxExcluded: total,
     estimatedTax: Math.round(total * 0.1),
     totalTaxIncluded: Math.round(total * 1.1)
@@ -782,6 +823,29 @@ function renderResult(){
         <div class="val">+${item.price.toLocaleString()}円</div>
       </div>`;
   });
+  // 交通費
+  if(r.transit && r.transit.ok){
+    const t = r.transit;
+    if(t.custom){
+      html += `
+        <div class="inc-row extra">
+          <div class="name">出張・交通費<small>8時間超のため別途お見積り（新宿駅から約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="val" style="color:var(--mid);font-size:14px;">別途見積</div>
+        </div>`;
+    }else if(t.cost === 0){
+      html += `
+        <div class="inc-row">
+          <div class="name">出張・交通費<small>${t.costLabel}（新宿駅から約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="val" style="color:var(--green);">無料</div>
+        </div>`;
+    }else{
+      html += `
+        <div class="inc-row extra">
+          <div class="name">出張・交通費<small>${t.costLabel}（新宿駅から約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="val">+${t.cost.toLocaleString()}円</div>
+        </div>`;
+    }
+  }
   // 合計
   html += `
     <div class="inc-row subtotal">
@@ -802,7 +866,11 @@ function renderResult(){
   // 注記
   const notices = [];
   notices.push('概算金額です。撮影条件・担当者・移動経路の確認後、正式なお見積りをご案内します。');
-  notices.push('交通費・出張費・宿泊費は上記金額に含まれません。別途お見積りいたします。');
+  if(r.transit && r.transit.ok && r.transit.custom){
+    notices.push('出張・交通費は往復8時間を超えるため、別途お見積りとなります。');
+  }else{
+    notices.push('出張・交通費は新宿駅起点の最短ルート所要時間を元にした概算です。レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費、高速代は利用区間・日時・車種に応じた公式ETC料金を参考に算出し、ご請求します。');
+  }
   if(r.items.some(i => i.id === 'drone')){
     notices.push('ドローン写真は飛行可否・天候により実施できない場合があります。別途、飛行許可申請費用が発生する場合があります。');
   }
@@ -827,7 +895,39 @@ function showStep(id, stepNo){
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-$('#peToResult').addEventListener('click', () => {
+$('#peToResult').addEventListener('click', async () => {
+  const btn = $('#peToResult');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '交通費を試算中…';
+  // ローディングオーバーレイ
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.96);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:"Noto Sans JP",sans-serif;';
+  overlay.innerHTML = '<div style="text-align:center;color:#1a2e4a;"><div style="width:50px;height:50px;border:4px solid #e0f2fe;border-top-color:#1a2e4a;border-radius:50%;animation:peSpin 1s linear infinite;margin:0 auto 16px;"></div><p style="font-weight:700;font-size:16px;margin:0;">新宿駅からの所要時間を計算中…</p></div><style>@keyframes peSpin{to{transform:rotate(360deg);}}</style>';
+  document.body.appendChild(overlay);
+  try {
+    const res = await fetch(N8N_TRANSIT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: state.propertyAddress })
+    });
+    if (!res.ok) throw new Error('サーバー応答エラー (HTTP ' + res.status + ')');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '経路を特定できませんでした');
+    state.transit = data;
+  } catch (e) {
+    overlay.parentNode && overlay.parentNode.removeChild(overlay);
+    btn.disabled = false;
+    btn.textContent = originalText;
+    alert('交通費の試算に失敗しました。\n\n住所をご確認いただき、都道府県・市区町村・番地まで含めて再度お試しください。\n\n詳細: ' + (e.message || e));
+    $('#peAddress').classList.add('err');
+    $('#peAddress').focus();
+    return;
+  }
+  overlay.parentNode && overlay.parentNode.removeChild(overlay);
+  btn.disabled = false;
+  btn.textContent = originalText;
+  $('#peAddress').classList.remove('err');
   renderResult();
   showStep('#peStepResult', 2);
 });
@@ -841,10 +941,13 @@ $('#peRetryBtn').addEventListener('click', () => {
     const k = `opt${o.id.charAt(0).toUpperCase() + o.id.slice(1)}`;
     state[k] = null;
   });
+  state.propertyAddress = null;
+  state.transit = null;
   state.lastResult = null;
   // UIリセット
   $$('.opt.sel').forEach(b => b.classList.remove('sel'));
   $('#peRoomSize').value = '';
+  const addrEl = $('#peAddress'); if(addrEl){ addrEl.value = ''; addrEl.classList.remove('err'); }
   ['peLastName','peFirstName','pePropertyName','peEmail'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.value = ''; el.classList.remove('err'); }
@@ -885,6 +988,20 @@ function buildSummaryText(){
     L.push('　' + op.name + '：' + label);
   });
   L.push('');
+  L.push('■ 物件住所');
+  L.push('　' + (state.propertyAddress || '未入力'));
+  if(state.transit && state.transit.ok){
+    const t = state.transit;
+    L.push('　新宿駅から約' + t.oneWayMinutes + '分（片道）／ 往復約' + t.roundTripMinutes + '分');
+    if(t.custom){
+      L.push('　出張・交通費：別途お見積り（往復8時間超）');
+    }else if(t.cost === 0){
+      L.push('　出張・交通費：無料（' + t.costLabel + '）');
+    }else{
+      L.push('　出張・交通費：' + t.cost.toLocaleString() + '円（' + t.costLabel + '・税抜）');
+    }
+  }
+  L.push('');
   L.push('━━━━━━━━━━━━━━');
   L.push('【概算お見積り】');
   if(r && r.custom){
@@ -899,7 +1016,13 @@ function buildSummaryText(){
     L.push('　消費税（10%）：' + r.estimatedTax.toLocaleString() + '円');
     L.push('　合計（税込目安）：' + r.totalTaxIncluded.toLocaleString() + '円');
     L.push('');
-    L.push('　※ 交通費・出張費は別途お見積りとなります');
+    if(state.transit && state.transit.ok && !state.transit.custom){
+      L.push('　（出張・交通費を含む／レンタカー・駐車場・宿泊・高速代等は別途実費）');
+    }else if(state.transit && state.transit.ok && state.transit.custom){
+      L.push('　（出張・交通費は往復8時間超のため別途お見積り）');
+    }else{
+      L.push('　※ 交通費・出張費は別途お見積りとなります');
+    }
   }
   L.push('━━━━━━━━━━━━━━');
   return L.join('\n');
@@ -927,14 +1050,24 @@ function buildPayload(lastName, firstName, propertyName, email){
     property: {
       roomType: roomDef ? roomDef.label : '',
       roomSize: state.roomSize,
+      address: state.propertyAddress || '',
       appliedLabel: r ? r.appliedLabel : '',
       appliedBy: r ? r.appliedBy : ''
     },
+    transit: state.transit && state.transit.ok ? {
+      oneWayMinutes: state.transit.oneWayMinutes,
+      roundTripMinutes: state.transit.roundTripMinutes,
+      distanceKm: state.transit.distanceKm,
+      cost: state.transit.cost,
+      costLabel: state.transit.costLabel,
+      custom: state.transit.custom === true
+    } : null,
     shoots: camOpts,
     extras: extraOpts,
     estimate: r && !r.custom ? {
       basePrice: r.basePrice,
       optionsTotal: r.items.reduce((s,i)=>s+i.price,0),
+      transitCost: r.transitCost || 0,
       totalTaxExcluded: r.totalTaxExcluded,
       estimatedTax: r.estimatedTax,
       totalTaxIncluded: r.totalTaxIncluded,
@@ -1020,6 +1153,17 @@ function buildPDFContent(){
     r.items.forEach(it => {
       breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">${it.name}</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${it.category}</div></td><td style="padding:12px 0;color:#ea4d3c;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">+${it.price.toLocaleString()}円</td></tr>`;
     });
+    // 交通費
+    if(r.transit && r.transit.ok){
+      const t = r.transit;
+      if(t.custom){
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">8時間超・別途お見積り（新宿駅から約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#6b7280;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">別途見積</td></tr>`;
+      }else if(t.cost === 0){
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（新宿駅から約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#3d9970;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">無料</td></tr>`;
+      }else{
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（新宿駅から約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#ea4d3c;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">+${t.cost.toLocaleString()}円</td></tr>`;
+      }
+    }
     breakdownRows += `<tr style="border-top:2px solid #1a2e4a;"><td style="padding:14px 0;color:#1a2e4a;font-weight:700;font-size:15px;">小計（税抜）</td><td style="padding:14px 0;color:#ea4d3c;font-weight:900;font-size:17px;text-align:right;">${r.totalTaxExcluded.toLocaleString()}円</td></tr>`;
     breakdownRows += `<tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">消費税（10%）</td><td style="padding:8px 0;color:#6b7280;font-size:13px;text-align:right;">${r.estimatedTax.toLocaleString()}円</td></tr>`;
     breakdownRows += `<tr style="border-top:1px solid #e5e7eb;"><td style="padding:12px 0;color:#1a2e4a;font-weight:700;font-size:15px;">合計（税込目安）</td><td style="padding:12px 0;color:#ea4d3c;font-weight:900;font-size:19px;text-align:right;">${r.totalTaxIncluded.toLocaleString()}円</td></tr>`;
@@ -1058,7 +1202,7 @@ function buildPDFContent(){
       <div class="pdf-section" style="background:linear-gradient(135deg,#1a2e4a 0%,#24405f 100%);color:#ffffff;border-radius:14px;padding:24px 28px;margin-bottom:14px;text-align:center;">
         <div style="font-size:11px;color:#d7f0ff;letter-spacing:0.16em;margin-bottom:6px;">概算お見積り合計（税抜）</div>
         <div style="font-size:36px;font-weight:900;line-height:1.2;">${r && !r.custom ? r.totalTaxExcluded.toLocaleString() + '円' : '個別お見積り'}</div>
-        ${r && !r.custom ? `<div style="font-size:13px;color:#c9d6e8;margin-top:6px;">税込目安 ${r.totalTaxIncluded.toLocaleString()}円 ／ 交通費別途</div>` : ''}
+        ${r && !r.custom ? `<div style="font-size:13px;color:#c9d6e8;margin-top:6px;">税込目安 ${r.totalTaxIncluded.toLocaleString()}円${r.transit && r.transit.ok && !r.transit.custom ? '（出張・交通費を含む）' : ''}</div>` : ''}
       </div>
       <div class="pdf-section" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:12px;">▼ 見積もりの内訳</div>
@@ -1069,6 +1213,8 @@ function buildPDFContent(){
         <table style="width:100%;border-collapse:collapse;">
           <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;width:40%;">間取り</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${roomDef ? roomDef.label : '―'}</td></tr>
           <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">室内面積</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${state.roomSize ? state.roomSize + '㎡' : '―'}</td></tr>
+          ${state.propertyAddress ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;vertical-align:top;">物件住所</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${state.propertyAddress}</td></tr>` : ''}
+          ${state.transit && state.transit.ok ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">新宿駅からの所要時間</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">約${state.transit.oneWayMinutes}分（片道）／ 往復約${state.transit.roundTripMinutes}分</td></tr>` : ''}
           ${r && !r.custom ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">適用区分</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${r.appliedLabel}（${r.appliedBy}区分）</td></tr>` : ''}
         </table>
       </div>
@@ -1087,7 +1233,8 @@ function buildPDFContent(){
       <div class="pdf-section" style="padding:14px 0;text-align:center;">
         <div style="font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:12px;">
           ※ 本シミュレーションの金額はあくまで概算（税抜表記）です。正式なお見積りは撮影条件・担当者・移動経路の確認後に確定いたします。<br>
-          ※ 交通費・出張費・宿泊費は上記金額に含まれておりません。
+          ※ 出張・交通費は新宿駅起点の最短ルート所要時間を元にした概算です。レンタカー・公共交通機関・駐車場・必要な宿泊は別途実費となります。<br>
+          ※ 高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出し、ご請求します。
         </div>
         <div style="background:#f8f9fb;border-radius:10px;padding:12px;font-size:11px;color:#1a2e4a;line-height:1.7;">
           <strong style="font-size:13px;">株式会社BizPato｜民泊管理バンク</strong><br>
