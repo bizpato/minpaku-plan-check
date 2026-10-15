@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>民泊管理バンク｜撮影料金かんたんシミュレーター</title>
+<title>株式会社BizPato｜撮影料金かんたんシミュレーター</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1512,7 +1512,7 @@ function buildPDFContent(){
           ※ 高速代は利用区間・日時・車種に応じた公式検索のETC料金を参考に算出します。
         </div>
         <div style="background:#f8f9fb;border-radius:10px;padding:12px;font-size:11px;color:#1a2e4a;line-height:1.7;">
-          <strong style="font-size:13px;">株式会社BizPato｜民泊管理バンク</strong><br>
+          <strong style="font-size:13px;">株式会社BizPato</strong><br>
           お問い合わせ：consulter@bizpato.com
         </div>
       </div>
@@ -1586,7 +1586,7 @@ $('#peDownloadPdfBtn').addEventListener('click', async () => {
     const firstName = $('#peFirstName').value.trim() || '';
     const today = new Date();
     const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
-    const filename = `民泊管理バンク_撮影見積_${lastName}${firstName}_${dateStr}.pdf`;
+    const filename = `BizPato_撮影見積_${lastName}${firstName}_${dateStr}.pdf`;
     pdf.save(filename);
   }catch(e){
     console.error('PDF generation failed:', e);
