@@ -631,7 +631,7 @@
           </div>
         </div>
         <div class="form-field">
-          <label for="pePropertyName">物件名 <span class="req">必須</span></label>
+          <label for="pePropertyName">物件名 <span style="display:inline-block;background:var(--line);color:var(--mid);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:4px;">任意</span></label>
           <input type="text" id="pePropertyName" placeholder="物件名を入力してください">
         </div>
         <div class="form-field">
@@ -1339,7 +1339,7 @@ function validateForm(){
   ['peLastName','peFirstName','pePropertyName','peEmail'].forEach(id => document.getElementById(id).classList.remove('err'));
   if(!lastName){ $('#peLastName').classList.add('err'); err.textContent = '姓を入力してください。'; return null; }
   if(!firstName){ $('#peFirstName').classList.add('err'); err.textContent = '名を入力してください。'; return null; }
-  if(!propertyName){ $('#pePropertyName').classList.add('err'); err.textContent = '物件名を入力してください。'; return null; }
+  // 物件名は任意(弊社でもこの時点で物件名が無い場合があるため)
   if(!email){ $('#peEmail').classList.add('err'); err.textContent = 'メールアドレスを入力してください。'; return null; }
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   if(!emailOk){ $('#peEmail').classList.add('err'); err.textContent = 'メールアドレスの形式が正しくありません。'; return null; }
@@ -1502,7 +1502,7 @@ function buildPDFContent(){
       </div>
       <div class="pdf-section" style="background:#fffae6;border-radius:14px;padding:20px 24px;margin-bottom:14px;">
         <div style="font-size:14px;font-weight:700;color:#1a2e4a;margin-bottom:10px;">▼ キャンセル・日程変更について</div>
-        <div style="font-size:13px;color:#1a2e4a;line-height:1.9;">撮影予定日の<strong>10日前まで</strong>に弊社にご連絡ください。<br>返金が発生する場合、振込手数料はホスト様のご負担となります。</div>
+        <div style="font-size:13px;color:#1a2e4a;line-height:1.9;">撮影予定日の<strong>10日前までのキャンセル・日程変更は無料</strong>です。<br>それ以降は<strong style="color:#ea4d3c;">100%のキャンセル料・日程変更料</strong>が発生します。</div>
       </div>
       <div class="pdf-section" style="padding:14px 0;text-align:center;">
         <div style="font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:12px;">
