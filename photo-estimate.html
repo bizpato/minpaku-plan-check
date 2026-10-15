@@ -1032,19 +1032,19 @@ function renderResult(){
     if(t.custom){
       html += `
         <div class="inc-row extra">
-          <div class="name">出張・交通費<small>8時間超のため別途お見積り（弊社から現地まで約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="name">出張・交通費<small>8時間超のため別途お見積り</small></div>
           <div class="val" style="color:var(--mid);font-size:14px;">別途見積</div>
         </div>`;
     }else if(t.cost === 0){
       html += `
         <div class="inc-row">
-          <div class="name">出張・交通費<small>${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="name">出張・交通費<small>${t.costLabel}</small></div>
           <div class="val" style="color:var(--green);">無料</div>
         </div>`;
     }else{
       html += `
         <div class="inc-row extra">
-          <div class="name">出張・交通費<small>${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分 / 片道）</small></div>
+          <div class="name">出張・交通費<small>${t.costLabel}</small></div>
           <div class="val">+${t.cost.toLocaleString()}円</div>
         </div>`;
     }
@@ -1234,7 +1234,6 @@ function buildSummaryText(){
   L.push('　' + (state.propertyAddress || '未入力'));
   if(state.transit && state.transit.ok){
     const t = state.transit;
-    L.push('　弊社から現地まで約' + t.oneWayMinutes + '分（片道）／ 往復約' + t.roundTripMinutes + '分');
     if(t.custom){
       L.push('　出張・交通費：別途お見積り（往復8時間超）');
     }else if(t.cost === 0){
@@ -1431,11 +1430,11 @@ function buildPDFContent(){
     if(r.transit && r.transit.ok){
       const t = r.transit;
       if(t.custom){
-        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">8時間超・別途お見積り（弊社から現地まで約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#6b7280;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">別途見積</td></tr>`;
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">8時間超・別途お見積り</div></td><td style="padding:12px 0;color:#6b7280;font-weight:700;font-size:13px;text-align:right;white-space:nowrap;vertical-align:top;">別途見積</td></tr>`;
       }else if(t.cost === 0){
-        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#3d9970;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">無料</td></tr>`;
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}</div></td><td style="padding:12px 0;color:#3d9970;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">無料</td></tr>`;
       }else{
-        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}（弊社から現地まで約${t.oneWayMinutes}分・片道）</div></td><td style="padding:12px 0;color:#ea4d3c;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">+${t.cost.toLocaleString()}円</td></tr>`;
+        breakdownRows += `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px 0;vertical-align:top;width:60%;"><div style="color:#1a2e4a;font-size:14px;">出張・交通費</div><div style="font-size:11px;color:#6b7280;margin-top:3px;">${t.costLabel}</div></td><td style="padding:12px 0;color:#ea4d3c;font-weight:700;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top;">+${t.cost.toLocaleString()}円</td></tr>`;
       }
     }
     breakdownRows += `<tr style="border-top:2px solid #1a2e4a;"><td style="padding:14px 0;color:#1a2e4a;font-weight:700;font-size:15px;">小計（税抜）</td><td style="padding:14px 0;color:#ea4d3c;font-weight:900;font-size:17px;text-align:right;">${r.totalTaxExcluded.toLocaleString()}円</td></tr>`;
@@ -1488,7 +1487,7 @@ function buildPDFContent(){
           <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;width:40%;">間取り</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${roomDef ? roomDef.label : '―'}</td></tr>
           <tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">室内面積</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${state.roomSize ? state.roomSize + '㎡' : '―'}</td></tr>
           ${state.propertyAddress ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;vertical-align:top;">物件住所</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${state.propertyAddress}</td></tr>` : ''}
-          ${state.transit && state.transit.ok ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">現地までの所要時間</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">約${state.transit.oneWayMinutes}分（片道）／ 往復約${state.transit.roundTripMinutes}分</td></tr>` : ''}
+          
           ${r && !r.custom ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:13px;">適用区分</td><td style="padding:6px 0;color:#1a2e4a;font-weight:700;font-size:14px;">${r.appliedLabel}（${r.appliedBy}区分）</td></tr>` : ''}
         </table>
       </div>
