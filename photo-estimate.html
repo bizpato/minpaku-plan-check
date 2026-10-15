@@ -594,7 +594,7 @@
     <!-- 同意チェックカード -->
     <div class="policy-card" id="pePolicyCard">
       <h4><i class="fa-solid fa-circle-info"></i>キャンセル・日程変更について</h4>
-      <p>撮影予定日の<strong>10日前までのキャンセルは無料</strong>です。<br>それ以降は<strong style="color:var(--red);">100%のキャンセル料</strong>が発生します。</p>
+      <p>撮影予定日の<strong>10日前までのキャンセル・日程変更は無料</strong>です。<br>それ以降は<strong style="color:var(--red);">100%のキャンセル料・日程変更料</strong>が発生します。</p>
       <label class="check-label" id="pePolicyLabel">
         <input type="checkbox" id="peAgreePolicy">
         <span>上記のキャンセル・日程変更ポリシーを確認しました<span class="req-mark">必須</span></span>
@@ -681,8 +681,8 @@ const ROOM_PRICES = [
 ];
 
 const CAM_OPTIONS = [
-  { id:'B', name:'ゲストガイド用写真',   desc:'家電の操作部や設置場所。ゲストへの案内に。',   price:25000 },
-  { id:'C', name:'ゲストサポート引継ぎ動画', desc:'弊社ゲストサポート部門が確認用に閲覧するルームツアー動画。収納内部・設備の位置を記録。無編集で納品。<br><span style="color:#c98a26;font-size:13px;font-weight:700;">※ 月額プランご契約の場合のみ必要（ハウスマニュアル単品でのご依頼の場合は不要）</span>', price:10000 },
+  { id:'B', name:'ゲストガイド用写真', desc:'ハウスマニュアルに掲載する電子レンジやエアコンのリモコンの撮影です。<br>ご自身のスマートフォンで撮影いただくことも可能です。', price:25000 },
+  { id:'C', name:'社内共有のための物件案内動画', desc:'24時間のゲスト対応を行う際に、詳細の物件構造を理解するための社内共有用の物件案内動画となります。<br>ご自身でスマートフォンにて撮影いただくことも可能です。<br><span style="color:#c98a26;font-size:13px;font-weight:700;">※ 月額プランご契約の場合のみ必要（ハウスマニュアル単品でのご依頼の場合は不要）</span>', price:10000 },
   { id:'D', name:'Booking.com認証用動画',   desc:'Booking.comでは、リスティング公開時に認証用動画の提出を求められる場合があります。その提出用の動画。無編集で納品。',        price:10000 }
 ];
 
