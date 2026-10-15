@@ -1037,7 +1037,7 @@ function buildResult(){
     {
       incEl.insertAdjacentHTML('beforeend',`
         <div class="inc-row">
-          <div class="name">${op.name}<small>${op.id==='op8'?'【東京23区内のみ】予約サイト掲載・写真撮影・ハウスマニュアル等を含むおまかせパック':(op.region?('【'+op.region+'】'):'おすすめのサポート')}</small></div>
+          <div class="name">${op.name}<small>${op.id==='op8'?'【東京23区内のみ】予約サイト掲載・写真撮影・ハウスマニュアル等を含むおまかせパック':(op.region?('【'+op.region+'】'):'おすすめのサポート')}</small>${op.id==='op4'?'<div style="margin-top:6px;"><a href="photo-estimate.html" target="_blank" style="color:#1a2e4a;text-decoration:underline;font-weight:700;font-size:12px;">▶ 詳細な見積りはこちら（撮影料金シミュレーター）</a></div>':''}</div>
           <div class="val">${priceLabel}</div>
         </div>`);
       if(op.type==='initial') initialSum += op.price;
