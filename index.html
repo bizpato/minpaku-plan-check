@@ -649,8 +649,9 @@ const OPTIONS = [
     yes:'自分で作れる／用意できる', no:'プロに作ってほしい' },
 
   { id:'op4', cat:'開業準備', name:'物件写真の撮影', includedInSetup:true,
-    desc:'予約サイトの写真は、予約数を大きく左右する最も重要な要素のひとつです。プロのカメラマンが、お部屋の魅力が伝わる物件写真と、ハウスマニュアルに使う設備写真を撮影します。スマホ撮影とは仕上がりが大きく変わります。',
-    price:100000, type:'initial',
+    desc:'予約サイトの写真は、予約数を大きく左右する最も重要な要素のひとつです。プロのカメラマンが、お部屋の魅力が伝わる物件写真と、ハウスマニュアルに使う設備写真を撮影します。スマホ撮影とは仕上がりが大きく変わります。<br>※ 料金は物件の間取り・面積・オプションにより変動します。詳細な見積りは <a href="photo-estimate.html" target="_blank" style="color:#1a2e4a;text-decoration:underline;font-weight:700;">撮影料金シミュレーター</a> でご確認いただけます。',
+    price:70000, type:'initial',
+    priceDisplay:'70,000円〜',
     yes:'良い写真を自分で用意できる', no:'プロに撮影してほしい' },
 
   { id:'op5', cat:'開業準備', name:'避難経路図の作成',
@@ -748,9 +749,15 @@ let location23 = null;  // 'in'|'out' : 東京23区内か
 // ===== Build option cards =====
 const optContainer = document.getElementById('optContainer');
 OPTIONS.forEach((op,i)=>{
-  const priceLabel = op.type==='monthly'
-    ? `月額 ${op.price.toLocaleString()}円${op.unit||''}`
-    : `${op.price.toLocaleString()}円`;
+  const priceLabel = op.priceDisplay
+
+    ? op.priceDisplay
+
+    : (op.type==='monthly'
+
+        ? `月額 ${op.price.toLocaleString()}円${op.unit||''}`
+
+        : `${op.price.toLocaleString()}円`);
   const regionTag = op.region ? `<span class="region-pill">${op.region}</span>` : '';
   const card = document.createElement('div');
   card.className='q';
@@ -1011,9 +1018,15 @@ function buildResult(){
   let initialSum = plan ? plan.initial : 0;
   let monthlySum = plan ? plan.monthly : 0;
   recommended.forEach(op=>{
-    const priceLabel = op.type==='monthly'
-      ? `月額 ${op.price.toLocaleString()}円${op.unit||''}`
-      : `${op.price.toLocaleString()}円`;
+    const priceLabel = op.priceDisplay
+
+      ? op.priceDisplay
+
+      : (op.type==='monthly'
+
+          ? `月額 ${op.price.toLocaleString()}円${op.unit||''}`
+
+          : `${op.price.toLocaleString()}円`);
     {
       incEl.insertAdjacentHTML('beforeend',`
         <div class="inc-row">
@@ -1111,9 +1124,7 @@ function buildResult(){
     recommendedDetails: recommended.map(op=>({
       name: op.name,
       type: op.type,
-      priceLabel: op.type==='monthly'
-        ? `月額 ${op.price.toLocaleString()}円${op.unit||''}`
-        : `${op.price.toLocaleString()}円`
+      priceLabel: op.priceDisplay || (op.type==='monthly' ? `月額 ${op.price.toLocaleString()}円${op.unit||''}` : `${op.price.toLocaleString()}円`)
     })),
     freebies: freebies
   };
